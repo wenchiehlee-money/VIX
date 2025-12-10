@@ -59,15 +59,15 @@ The script automatically fetches **US VIX** and **Taiwan VIX** data (recent mont
     4.  Place it in this project folder.
 
 ### 3. Taiwan VIX (TAIEX Options Volatility Index)
-*   **Status**: **Fully Automatic** (for recent months).
-*   **Automatic Download**: The script automatically downloads Taiwan VIX data from TAIFEX's official data files. TAIFEX provides recent months of data (typically last 3-4 months) as downloadable TXT files.
-*   **Data Availability**: Automatic download works for recent months. Historical data beyond what TAIFEX provides online requires manual download.
-*   **Manual Download** (for older historical data):
-    1.  Go to the [TAIFEX VIX Daily Data Page](https://www.taifex.com.tw/enl/eng7/vixDaily3MNew).
-    2.  Click the "Download" button for the desired month.
-    3.  Save and **rename** the file to: `taifex_vix.csv`.
-    4.  Place it in this project folder.
-*   **Note**: The script automatically attempts to download all months from your specified start date. Only recent months are available online from TAIFEX.
+*   **Status**: **Fully Automatic**.
+*   **Automatic Download**: The script automatically downloads Taiwan VIX data from TAIFEX's official data files.
+*   **Data Availability**: TAIFEX provides recent months online (typically last 3-4 months). The script downloads all available months automatically.
+*   **Historical Data Accumulation**: With daily GitHub Actions automation, historical data accumulates over time. After running for several months, you'll have a complete historical dataset without any manual intervention.
+*   **Manual Download** (optional, only if you need older historical data immediately):
+    1.  Download monthly TXT files from TAIFEX: `https://www.taifex.com.tw/file/taifex/Dailydownload/vix/log2data_eng/YYYYMMnew.txt` (replace YYYYMM with year and month, e.g., 202401new.txt for January 2024)
+    2.  Combine multiple months into a CSV file with columns: Date, Close (VIX value)
+    3.  Save as `taifex_vix.csv` in this project folder
+    4.  The script will merge this with automatically downloaded data
 
 ## Output
 The script generates `global_vix_merged.csv` containing the combined data (aligned by date).
