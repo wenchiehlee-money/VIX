@@ -3,6 +3,17 @@ import matplotlib.pyplot as plt
 import os
 import yfinance as yf
 from datetime import datetime, timedelta
+import matplotlib
+import platform
+
+# Configure Chinese font support
+if platform.system() == 'Windows':
+    matplotlib.rcParams['font.sans-serif'] = ['Microsoft JhengHei', 'Microsoft YaHei', 'SimHei', 'Arial Unicode MS']
+elif platform.system() == 'Linux':
+    matplotlib.rcParams['font.sans-serif'] = ['Noto Sans CJK TC', 'Noto Sans CJK SC', 'WenQuanYi Micro Hei', 'Arial Unicode MS']
+else:  # macOS
+    matplotlib.rcParams['font.sans-serif'] = ['Heiti TC', 'PingFang TC', 'Arial Unicode MS']
+matplotlib.rcParams['axes.unicode_minus'] = False  # Fix minus sign display
 
 # Configuration
 csv_file = "global_vix_merged.csv"
@@ -79,7 +90,7 @@ def plot_vix(df):
         else:
             plt.plot(df_filtered.index, df_filtered[col], label=col, linewidth=2.0)
 
-    plt.title(f'VIX Indices (Last {years_back} Years)', fontsize=16)
+    plt.title(f'VIX Indices (Last {years_back} Years)', fontsize=16, pad=20)
     plt.xlabel('Date', fontsize=12)
     plt.ylabel('VIX Value', fontsize=12)
     

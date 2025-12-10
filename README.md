@@ -39,6 +39,8 @@ python collect_vix_data.py
 
 ### Historical Trend (Last 2 Years)
 
+產生時間: 2025-12-10 22:53:11 CST
+
 ![VIX Chart](vix_chart.png)
 
 ## Data Sources & Instructions

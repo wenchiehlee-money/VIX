@@ -10,6 +10,8 @@ on:
 jobs:
   update-data:
     runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Taipei
 
     steps:
     - name: Checkout repository
