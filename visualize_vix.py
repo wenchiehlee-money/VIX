@@ -46,14 +46,14 @@ def plot_vix(df):
         print("No data in the last 2 years.")
         return
 
-    # Plotting
-    plt.figure(figsize=(12, 6))
+    # Plotting - increased figure size for better clarity
+    plt.figure(figsize=(16, 8), dpi=150)  # Higher DPI for sharper image
     
     # Define styles for each known column
     styles = {
         'US_VIX': {'color': 'blue', 'label': 'US VIX (^VIX)', 'linewidth': 1.5},
         'Japan_VIX': {'color': 'red', 'label': 'Japan VIX (Nikkei VI)', 'linewidth': 1.5, 'linestyle': '--'},
-        'Taiwan_VIX': {'color': 'green', 'label': 'Taiwan VIX (VIXTWN)', 'linewidth': 1.5, 'linestyle': '-.'}
+        'Taiwan_VIX': {'color': 'green', 'label': 'Taiwan VIX (VIXTWN)', 'linewidth': 1.5}
     }
 
     # Add Risk Zones (Background Color Bands)
@@ -94,9 +94,9 @@ def plot_vix(df):
     
     plt.tight_layout()
 
-    # Save
-    plt.savefig(output_image)
-    print(f"Chart saved to {output_image}")
+    # Save with high resolution
+    plt.savefig(output_image, dpi=300, bbox_inches='tight')
+    print(f"Chart saved to {output_image} (high resolution)")
 
 if __name__ == "__main__":
     df = get_data()
