@@ -34,12 +34,12 @@ python collect_vix_data.py
 ## Current VIX Data
 
 *   **US VIX (^VIX)**: **17.42**
-*   **Japan VIX (Nikkei VI)**: Current data is not automatically retrievable. Please refer to financial news sources or the Nikkei website.
-*   **Taiwan VIX (VIXTWN)**: Current data is not automatically retrievable. Please refer to financial news sources or the TAIFEX website.
+*   **Japan VIX (Nikkei VI)**: Manual download required. Please refer to financial news sources or the Nikkei website.
+*   **Taiwan VIX (VIXTWN)**: **20.15** (as of 2025-12-10, automatically collected from TAIFEX)
 
 ### Historical Trend (Last 2 Years)
 
-產生時間: 2025-12-10 23:02:46 CST
+產生時間: 2025-12-10 23:08:20 CST
 
 ![VIX Chart](vix_chart.svg)
 

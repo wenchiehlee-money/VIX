@@ -3,6 +3,7 @@ import pandas as pd
 import re
 from datetime import datetime
 import pytz
+import os
 
 def get_latest_us_vix():
     try:
@@ -17,14 +18,35 @@ def get_latest_us_vix():
     except Exception as e:
         return f"Error: {e}"
 
-def update_readme_with_vix(vix_value):
+def get_latest_taiwan_vix():
+    """Get the latest Taiwan VIX value from the merged CSV file."""
+    try:
+        if os.path.exists("global_vix_merged.csv"):
+            df = pd.read_csv("global_vix_merged.csv", index_col='Date', parse_dates=True)
+            if 'Taiwan_VIX' in df.columns:
+                # Get the last non-NaN value
+                taiwan_vix = df['Taiwan_VIX'].dropna()
+                if not taiwan_vix.empty:
+                    latest_value = taiwan_vix.iloc[-1]
+                    latest_date = taiwan_vix.index[-1].strftime('%Y-%m-%d')
+                    return f"{latest_value:.2f}", latest_date
+        return "N/A", "N/A"
+    except Exception as e:
+        return f"Error: {e}", "N/A"
+
+def update_readme_with_vix(us_vix_value, taiwan_vix_value, taiwan_vix_date):
     readme_path = "README.md"
 
     with open(readme_path, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # Replace the placeholder with the actual value
-    new_content = re.sub(r'<!-- LATEST_US_VIX_DATA -->', f'**{vix_value}**', content)
+    # Update US VIX
+    new_content = re.sub(r'<!-- LATEST_US_VIX_DATA -->', f'**{us_vix_value}**', content)
+
+    # Update Taiwan VIX line
+    taiwan_pattern = r'\*\s+\*\*Taiwan VIX \(VIXTWN\)\*\*:.*'
+    taiwan_replacement = f'*   **Taiwan VIX (VIXTWN)**: **{taiwan_vix_value}** (as of {taiwan_vix_date}, automatically collected from TAIFEX)'
+    new_content = re.sub(taiwan_pattern, taiwan_replacement, new_content)
 
     # Generate timestamp in CST
     cst = pytz.timezone('Asia/Taipei')
@@ -39,10 +61,12 @@ def update_readme_with_vix(vix_value):
     with open(readme_path, 'w', encoding='utf-8') as f:
         f.write(new_content)
 
-    print(f"Updated README.md with latest US VIX: {vix_value}")
+    print(f"Updated README.md with latest US VIX: {us_vix_value}")
+    print(f"Updated README.md with latest Taiwan VIX: {taiwan_vix_value} (as of {taiwan_vix_date})")
     print(f"Updated README.md with timestamp: {timestamp}")
 
 if __name__ == "__main__":
-    print("Fetching latest US VIX data...")
+    print("Fetching latest VIX data...")
     latest_us_vix = get_latest_us_vix()
-    update_readme_with_vix(latest_us_vix)
+    latest_taiwan_vix, taiwan_vix_date = get_latest_taiwan_vix()
+    update_readme_with_vix(latest_us_vix, latest_taiwan_vix, taiwan_vix_date)
