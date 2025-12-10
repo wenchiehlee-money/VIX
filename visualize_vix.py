@@ -17,7 +17,7 @@ matplotlib.rcParams['axes.unicode_minus'] = False  # Fix minus sign display
 
 # Configuration
 csv_file = "global_vix_merged.csv"
-output_image = "vix_chart.png"
+output_image = "vix_chart.svg"
 years_back = 2
 
 def get_data():
@@ -105,9 +105,9 @@ def plot_vix(df):
     
     plt.tight_layout()
 
-    # Save with high resolution
-    plt.savefig(output_image, dpi=300, bbox_inches='tight')
-    print(f"Chart saved to {output_image} (high resolution)")
+    # Save as SVG (vector format for perfect quality at any size)
+    plt.savefig(output_image, format='svg', bbox_inches='tight')
+    print(f"Chart saved to {output_image} (SVG vector format)")
 
 if __name__ == "__main__":
     df = get_data()

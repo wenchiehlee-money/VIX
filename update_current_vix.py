@@ -31,10 +31,10 @@ def update_readme_with_vix(vix_value):
     timestamp = datetime.now(cst).strftime('%Y-%m-%d %H:%M:%S CST')
     timestamp_line = f'產生時間: {timestamp}\n\n'
 
-    # Replace existing timestamp or add new one before the PNG
-    # Pattern: Find any existing timestamp line before the PNG, or just the PNG line itself
-    png_pattern = r'(產生時間: .*?\n\n)?(\!\[VIX Chart\]\(vix_chart\.png\))'
-    new_content = re.sub(png_pattern, timestamp_line + r'![VIX Chart](vix_chart.png)', new_content)
+    # Replace existing timestamp or add new one before the chart image
+    # Pattern: Find any existing timestamp line before the chart, or just the chart line itself
+    chart_pattern = r'(產生時間: .*?\n\n)?(\!\[VIX Chart\]\(vix_chart\.(png|svg)\))'
+    new_content = re.sub(chart_pattern, timestamp_line + r'![VIX Chart](vix_chart.svg)', new_content)
 
     with open(readme_path, 'w', encoding='utf-8') as f:
         f.write(new_content)

@@ -53,7 +53,7 @@ jobs:
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git add global_vix_merged.csv vix_chart.png README.md
+        git add global_vix_merged.csv vix_chart.svg README.md
         git commit -m "🤖 Auto-update: VIX data $(date +'%Y-%m-%d')"
         git push
       env:
