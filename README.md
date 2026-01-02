@@ -45,11 +45,11 @@ python visualize_vix_interactive.py
 
 *   **US VIX (^VIX)**: **17.42**
 *   **Japan VIX (Nikkei VI)**: Manual download required. Please refer to financial news sources or the Nikkei website.
-*   **Taiwan VIX (VIXTWN)**: **20.15** (as of 2025-12-10, automatically collected from TAIFEX)
+*   **Taiwan VIX (VIXTWN)**: **18.25** (as of 2025-12-31, automatically collected from TAIFEX)
 
 ### Historical Trend (Last 2 Years)
 
-產生時間: 2025-12-10 23:08:20 CST
+產生時間: 2026-01-02 11:14:06 CST
 
 ![VIX Chart](vix_chart.svg)
 
