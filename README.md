@@ -49,7 +49,7 @@ python visualize_vix_interactive.py
 
 ### Historical Trend (Last 2 Years)
 
-產生時間: 2026-01-31 22:36:07 CST
+產生時間: 2026-02-01 22:25:21 CST
 
 ![VIX Chart](vix_chart.svg)
 
