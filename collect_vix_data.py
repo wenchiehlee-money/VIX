@@ -291,47 +291,80 @@ def load_taiwan_vix_local(file_path, start_date, end_date):
         print(f"  Error reading local Taiwan VIX: {e}")
         return pd.DataFrame()
 
+def load_taiwan_vix_historical(file_path):
+    """Load the macromicro.me historical Taiwan VIX CSV (taiwan_vix_historical.csv)."""
+    if not os.path.exists(file_path):
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(file_path, index_col=0, parse_dates=True)
+        df = df.rename(columns={df.columns[0]: 'Taiwan_VIX'})
+        df = df[['Taiwan_VIX']]
+        df = df[~df.index.duplicated(keep='first')]
+        print(f"  Loaded {len(df)} rows from {file_path} ({df.index.min().date()} ~ {df.index.max().date()})")
+        return df
+    except Exception as e:
+        print(f"  Error loading {file_path}: {e}")
+        return pd.DataFrame()
+
+
 def main():
+    output_file = "global_vix_merged.csv"
+
+    # Date ranges
     start_date = "2010-01-01"
     end_date = pd.Timestamp.now().strftime("%Y-%m-%d")
-    
-    # 1. US VIX (Auto)
+
+    # 1. US VIX (Auto - full history)
     us_df = collect_us_vix(start_date, end_date)
-    
+
     # 2. Japan VIX (Local File)
-    # User should download: https://indexes.nikkei.co.jp/nkave/archives/data/nk225vi_daily_jp.csv
     jp_file = "nk225vi_daily_jp.csv"
     jp_df = load_japan_vix_local(jp_file, start_date, end_date)
-    
-    # 3. Taiwan VIX (Automatic Download)
-    # Automatically download from TAIFEX website
-    tw_df = collect_taiwan_vix_auto(start_date, end_date)
-    
-    # Merge
-    print("\nMerging all available data...")
-    merged_df = pd.DataFrame()
-    
-    if not us_df.empty:
-        merged_df = us_df.copy()
-        
-    for df in [jp_df, tw_df]:
-        if not df.empty:
-            if merged_df.empty:
-                merged_df = df
-            else:
-                merged_df = merged_df.join(df, how='outer')
-    
-    if not merged_df.empty:
-        merged_df = merged_df.sort_index()
-        output_file = "global_vix_merged.csv"
-        merged_df.to_csv(output_file)
-        print(f"\nSUCCESS! Data saved to {output_file}")
-        print("Data Summary:")
-        print(merged_df.describe())
-        print("\nHead:")
-        print(merged_df.head())
+
+    # 3. Taiwan VIX - combine historical CSV + TAIFEX recent updates
+    print("\nLoading Taiwan VIX historical base (taiwan_vix_historical.csv)...")
+    tw_historical = load_taiwan_vix_historical("taiwan_vix_historical.csv")
+
+    # TAIFEX only keeps ~2 months; fetch current + previous month to catch the latest days
+    print("Fetching latest Taiwan VIX from TAIFEX (current + previous month)...")
+    taiwan_start_date = (pd.Timestamp.now() - pd.Timedelta(days=65)).strftime("%Y-%m-%d")
+    tw_recent = collect_taiwan_vix_auto(taiwan_start_date, end_date)
+
+    # Merge: recent TAIFEX takes precedence over historical CSV for overlapping dates
+    if not tw_historical.empty and not tw_recent.empty:
+        tw_df = tw_recent.combine_first(tw_historical)
+    elif not tw_recent.empty:
+        tw_df = tw_recent
     else:
-        print("\nNo data collected.")
+        tw_df = tw_historical
+
+    if not tw_df.empty:
+        tw_df = tw_df.sort_index()
+        tw_df = tw_df[~tw_df.index.duplicated(keep='first')]
+        print(f"  Taiwan VIX combined: {tw_df['Taiwan_VIX'].notna().sum()} rows "
+              f"({tw_df[tw_df.Taiwan_VIX.notna()].index.min().date()} ~ "
+              f"{tw_df[tw_df.Taiwan_VIX.notna()].index.max().date()})")
+
+    # Build merged dataframe with outer join so all dates are included
+    print("\nMerging all data...")
+    frames = [df for df in [us_df, jp_df, tw_df] if not df.empty]
+    if not frames:
+        print("No data collected.")
+        return
+
+    merged_df = frames[0]
+    for df in frames[1:]:
+        merged_df = merged_df.combine_first(df)
+
+    merged_df = merged_df.sort_index()
+    merged_df = merged_df[~merged_df.index.duplicated(keep='first')]
+    merged_df.to_csv(output_file)
+
+    print(f"\nSUCCESS! Data saved to {output_file}")
+    print("\nData Summary:")
+    print(merged_df.describe())
+    print("\nRecent data (last 5 rows):")
+    print(merged_df.tail())
 
 if __name__ == "__main__":
     main()

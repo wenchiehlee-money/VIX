@@ -18,7 +18,7 @@ matplotlib.rcParams['axes.unicode_minus'] = False  # Fix minus sign display
 # Configuration
 csv_file = "global_vix_merged.csv"
 output_image = "vix_chart.svg"
-years_back = 2
+years_back = 5
 
 def get_data():
     # 1. Try to load merged CSV
@@ -48,13 +48,13 @@ def plot_vix(df):
         print("No data to plot.")
         return
 
-    # Filter for last 2 years
+    # Filter for last 5 years
     end_date = df.index.max()
     start_date = end_date - timedelta(days=years_back * 365)
     df_filtered = df.loc[start_date:end_date]
 
     if df_filtered.empty:
-        print("No data in the last 2 years.")
+        print("No data in the last 5 years.")
         return
 
     # Plotting - increased figure size for better clarity

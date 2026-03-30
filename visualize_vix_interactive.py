@@ -8,7 +8,7 @@ import pytz
 # Configuration
 csv_file = "global_vix_merged.csv"
 output_html = "vix_chart_interactive.html"
-years_back = 2
+years_back = 5
 
 def get_data():
     """Load VIX data from CSV file."""
@@ -27,13 +27,13 @@ def plot_vix_interactive(df):
         print("No data to plot.")
         return
 
-    # Filter for last 2 years
+    # Filter for last 5 years
     end_date = df.index.max()
     start_date = end_date - timedelta(days=years_back * 365)
     df_filtered = df.loc[start_date:end_date]
 
     if df_filtered.empty:
-        print("No data in the last 2 years.")
+        print("No data in the last 5 years.")
         return
 
     # Create figure
