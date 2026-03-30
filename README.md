@@ -56,16 +56,6 @@ python visualize_vix_interactive.py
 
 ![VIX Chart](vix_chart.svg)
 
-**📊 [Interactive Chart (Click to Download)](vix_chart_interactive.html)** - Zoom, pan, and explore data in detail!
-
-Features:
-- 🔍 **Zoom In/Out**: Click and drag to zoom into specific time periods
-- 📍 **Pan**: Hold Shift and drag to move across the timeline
-- 🔄 **Reset View**: Double-click to reset to original view
-- 👆 **Hover Details**: Mouse over lines to see exact values and dates
-- 🎚️ **Toggle Lines**: Click legend items to show/hide specific VIX indices
-- 📅 **Quick Time Ranges**: Use buttons (1m, 3m, 6m, 1y, 2y) to jump to specific periods
-- 💾 **Download as PNG**: Use the camera icon in the toolbar
 
 ## Data Sources & Instructions
 
