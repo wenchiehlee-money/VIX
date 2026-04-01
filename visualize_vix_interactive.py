@@ -129,13 +129,12 @@ def plot_vix_interactive(df_vix):
         if not pd.isna(current_max):
             max_vix = max(45, current_max * 1.1)
 
-    # 5. Add Historical Crash Events
+    # 5. Add Historical Crash Events (Hover Flags Only)
     df_events = get_event_data()
     event_annotations = []
     if not df_events.empty:
         mask = (df_events['開始日期'] >= start_date) & (df_events['開始日期'] <= end_date)
         df_plot_events = df_events.loc[mask].sort_values('開始日期')
-        print(f"Plotting {len(df_plot_events)} events.")
         
         cat_colors = {
             '金融危機': '#9467bd', '地緣政治': '#d62728', '政策衝擊': '#ff7f0e',
@@ -149,29 +148,28 @@ def plot_vix_interactive(df_vix):
             event_cat = event.get('類別', '其他')
             color = cat_colors.get(event_cat, 'gray')
             
-            # Bright vertical line
-            fig.add_vline(x=event_date, line_width=2, line_dash="dash", line_color=color, opacity=0.7)
+            # Subtler vertical line
+            fig.add_vline(x=event_date, line_width=1, line_dash="dot", line_color="rgba(150, 150, 150, 0.3)", layer="below")
             
             link1 = event.get('Link1', '')
             h_text = f"<b>{event_name}</b> ({event_cat})<br>日期: {event_date.date()}<br>{event_note}"
             if pd.notna(link1) and link1:
-                h_text += f"<br><a href='{link1}'>查看來源</a>"
+                h_text += f"<br>點擊旗標查看來源"
 
-            # Position annotations INSIDE the plot area top part
+            # Clean Flag Icon at the top
             event_annotations.append(dict(
                 x=event_date,
-                y=0.95, # 95% height of the plot
+                y=1.0,
                 yref='paper',
-                text=f"🚩{event_name}",
+                text="🚩",
                 showarrow=False,
-                textangle=-45, # Slanted for readability
-                xanchor='left',
-                yanchor='top',
-                font=dict(size=12, color="white"),
-                bgcolor=color, # Solid category color background
-                bordercolor="white",
+                font=dict(size=16, color=color),
+                bgcolor="rgba(255, 255, 255, 0.5)",
+                bordercolor=color,
                 borderwidth=1,
-                hovertext=h_text
+                hovertext=h_text,
+                # If there's a link, we can use capture click in some plotly versions, 
+                # but standard hover is safest for cleanliness
             ))
 
     # Get current time for footer
@@ -186,10 +184,10 @@ def plot_vix_interactive(df_vix):
 
     # 6. Styling & Layout
     fig.update_layout(
-        title=dict(text='<b>Taiwan VIX vs TAIEX 走勢對照圖 (附重大市場事件)</b>', x=0.5, y=0.98, font=dict(size=24, color='#333')),
+        title=dict(text='<b>Taiwan VIX vs TAIEX 走勢對照圖 (懸停 🚩 查看重大事件)</b>', x=0.5, y=0.98, font=dict(size=24, color='#333')),
         template='plotly_white', hovermode='x unified', height=800,
-        legend=dict(orientation="h", yanchor="bottom", y=1.05, xanchor="right", x=1),
-        margin=dict(l=50, r=50, t=120, b=80),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        margin=dict(l=50, r=50, t=100, b=80),
         annotations=event_annotations + [footer_ann]
     )
 
