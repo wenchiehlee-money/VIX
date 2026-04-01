@@ -155,10 +155,11 @@ def plot_vix_interactive(df_vix):
             
             h_text = f"<b>{event_name}</b> ({event_cat})<br>期間: {s_date.date()} ~ {e_date.date()}<br>{event_note}"
 
-            # Flag at the start of the range
+            # Flag at the start of the range (anchor left to move it right)
             event_annotations.append(dict(
                 x=s_date, y=1.0, yref='paper',
                 text="🚩", showarrow=False,
+                xanchor='left', # Move flag to the right of the line
                 font=dict(size=16, color=color),
                 bgcolor="rgba(255, 255, 255, 0.5)",
                 hovertext=h_text
