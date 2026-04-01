@@ -2,7 +2,7 @@
 
 ![Update VIX Data Daily](https://github.com/wenchiehlee-money/VIX/actions/workflows/update-vix-data.yml/badge.svg)
 
-📊 **[點此查看：台指 VIX 互動式趨勢圖 (MacroMicro 風格)](https://wenchiehlee-money.github.io/VIX/)**
+📊 **[點此查看：台指 VIX 互動式趨勢圖](https://wenchiehlee-money.github.io/VIX/)**
 
 This project collects and merges VIX (Volatility Index) data for the **US**, **Japan**, and **Taiwan** markets.
 
