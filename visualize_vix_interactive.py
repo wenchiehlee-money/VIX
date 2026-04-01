@@ -56,7 +56,7 @@ def get_taiex_data(start_date, end_date):
     return pd.DataFrame()
 
 def plot_vix_interactive(df_vix):
-    """Create interactive chart with 80/20 top/bottom layout."""
+    """Create interactive chart with VIX at top 80% and TAIEX at bottom 20% in same subplot."""
     if df_vix.empty:
         print("No VIX data to plot.")
         return
@@ -73,15 +73,22 @@ def plot_vix_interactive(df_vix):
     df = df_vix.join(df_taiex, how='left')
     df = df.ffill()
 
-    # Create Subplots: 2 rows, top 80%, bottom 20%
-    fig = make_subplots(
-        rows=2, cols=1, 
-        shared_xaxes=True, 
-        vertical_spacing=0.05,
-        row_heights=[0.8, 0.2] # 80% Top, 20% Bottom
-    )
+    # Create figure with secondary Y-axis
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-    # --- TOP CHART (VIX) ---
+    # 1. Add TAIEX (Secondary Y-axis, will be moved to bottom 20% domain)
+    if 'TAIEX' in df.columns:
+        fig.add_trace(
+            go.Scatter(
+                x=df.index, y=df['TAIEX'], name="TAIEX (台股指數)",
+                line=dict(color='rgba(31, 119, 180, 0.5)', width=1.5),
+                fill='tozeroy', fillcolor='rgba(31, 119, 180, 0.1)',
+                hovertemplate='TAIEX: %{y:,.0f}<extra></extra>'
+            ),
+            secondary_y=True,
+        )
+
+    # 2. Add VIX lines (Primary Y-axis, will be moved to top 80% domain)
     line_configs = {
         'Taiwan_VIX': {'color': '#00A86B', 'name': 'Taiwan VIX (台指 VIX)', 'width': 1.5, 'dash': 'solid'},
         'US_VIX': {'color': 'red', 'name': 'US VIX (標普 VIX)', 'width': 1.5, 'dash': 'solid'},
@@ -96,28 +103,16 @@ def plot_vix_interactive(df_vix):
                     line=dict(color=config['color'], width=config['width'], dash=config.get('dash', 'solid')),
                     hovertemplate='%{y:.2f}<extra></extra>'
                 ),
-                row=1, col=1
+                secondary_y=False,
             )
 
-    # Risk Zones (Top Chart)
-    fig.add_hrect(y0=0, y1=15, fillcolor="green", opacity=0.05, layer="below", line_width=0, row=1, col=1)
-    fig.add_hrect(y0=20, y1=30, fillcolor="orange", opacity=0.08, layer="below", line_width=0, row=1, col=1)
-    fig.add_hrect(y0=30, y1=100, fillcolor="red", opacity=0.08, layer="below", line_width=0, row=1, col=1)
-    fig.add_hline(y=30, line_dash="dash", line_color="rgba(200, 0, 0, 0.5)", line_width=1, row=1, col=1)
+    # 3. Risk Zones (Top 80%)
+    fig.add_hrect(y0=0, y1=15, fillcolor="green", opacity=0.05, layer="below", line_width=0, secondary_y=False)
+    fig.add_hrect(y0=20, y1=30, fillcolor="orange", opacity=0.08, layer="below", line_width=0, secondary_y=False)
+    fig.add_hrect(y0=30, y1=100, fillcolor="red", opacity=0.08, layer="below", line_width=0, secondary_y=False)
+    fig.add_hline(y=30, line_dash="dash", line_color="rgba(200, 0, 0, 0.5)", line_width=1, secondary_y=False)
 
-    # --- BOTTOM CHART (TAIEX) ---
-    if 'TAIEX' in df.columns:
-        fig.add_trace(
-            go.Scatter(
-                x=df.index, y=df['TAIEX'], name="TAIEX (台股指數)",
-                line=dict(color='#1f77b4', width=1.5),
-                fill='tozeroy', fillcolor='rgba(31, 119, 180, 0.1)',
-                hovertemplate='TAIEX: %{y:,.0f}<extra></extra>'
-            ),
-            row=2, col=1
-        )
-
-    # --- HISTORICAL EVENTS ---
+    # 4. Historical Events
     df_events = get_event_data()
     event_annotations = []
     if not df_events.empty:
@@ -137,24 +132,22 @@ def plot_vix_interactive(df_vix):
             event_cat = event.get('類別', '其他')
             color = cat_colors.get(event_cat, 'gray')
             
-            # Shaded Background (Full Height across rows)
             fig.add_vrect(
-                x0=s_date, x1=e_date, fillcolor=color, opacity=0.1,
+                x0=s_date, x1=e_date, fillcolor=color, opacity=0.15,
                 layer="below", line_width=0
             )
             
             h_text = f"<b>{event_name}</b> ({event_cat})<br>期間: {s_date.date()} ~ {e_date.date()}<br>{event_note}"
 
-            # Flag at the top of the TOP chart
             event_annotations.append(dict(
-                x=s_date, y=1.0, yref='paper', # Keep relative to full layout for top positioning
+                x=s_date, y=1.0, yref='paper',
                 text="🚩", showarrow=False, xanchor='left',
                 font=dict(size=16, color=color),
                 bgcolor="rgba(255, 255, 255, 0.5)",
                 hovertext=h_text
             ))
 
-    # Calculate max VIX for scaling
+    # Calculate max VIX
     existing_vix_cols = [col for col in line_configs.keys() if col in df.columns]
     max_vix = 45
     if existing_vix_cols:
@@ -169,20 +162,20 @@ def plot_vix_interactive(df_vix):
     # Footer
     footer_ann = dict(
         text=f"更新時間: {timestamp} (CST) | 來源: TAIFEX, Yahoo Finance",
-        showarrow=False, xref="paper", yref="paper", x=1, y=-0.1, font=dict(size=10, color="gray")
+        showarrow=False, xref="paper", yref="paper", x=1, y=-0.12, font=dict(size=10, color="gray")
     )
 
-    # 6. Layout
+    # 5. Layout with Stacked Y-axis Domains
     fig.update_layout(
-        title=dict(text='<b>VIX vs TAIEX 走勢對照圖 (上方 80% VIX, 下方 20% 指數)</b>', x=0.5, y=0.95, font=dict(size=20, color='#333')),
-        template='plotly_white', hovermode='x unified', height=800,
+        title=dict(text='<b>Taiwan VIX vs TAIEX 走勢對照圖 (懸停 🚩 查看事件)</b>', x=0.5, y=0.95, font=dict(size=20, color='#333')),
+        template='plotly_white', hovermode='x unified', height=750,
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         margin=dict(l=50, r=50, t=100, b=60),
         annotations=event_annotations + [footer_ann]
     )
 
     fig.update_xaxes(
-        title='日期', showgrid=True, gridcolor='#f0f0f0', row=2, col=1, # Title only on bottom
+        title='日期', showgrid=True, gridcolor='#f0f0f0',
         rangeselector=dict(
             buttons=list([
                 dict(count=1, label="1M", step="month", stepmode="backward"),
@@ -197,11 +190,26 @@ def plot_vix_interactive(df_vix):
         rangeslider=dict(visible=True, thickness=0.04)
     )
 
-    fig.update_yaxes(title_text="VIX 指數", range=[0, max_vix], gridcolor='#f0f0f0', row=1, col=1)
-    fig.update_yaxes(title_text="TAIEX 指數", gridcolor='#f0f0f0', row=2, col=1)
+    # --- THE MAGIC PART: Split the Subplot vertical space ---
+    # VIX Y-axis: occupies top 80% (from 0.2 to 1.0)
+    fig.update_yaxes(
+        title_text="VIX 指數", 
+        range=[0, max_vix], 
+        gridcolor='#f0f0f0', 
+        domain=[0.2, 1.0], # Top 80%
+        secondary_y=False
+    )
+    
+    # TAIEX Y-axis: occupies bottom 20% (from 0.0 to 0.18)
+    fig.update_yaxes(
+        title_text="TAIEX 指數", 
+        gridcolor='#f0f0f0', 
+        domain=[0.0, 0.18], # Bottom 20%
+        secondary_y=True
+    )
 
     fig.write_html(output_html, include_plotlyjs='cdn', config={'displayModeBar': True, 'displaylogo': False})
-    print(f"Interactive chart with 80/20 layout saved to {output_html}")
+    print(f"Interactive chart with split domains saved to {output_html}")
 
 if __name__ == "__main__":
     df_vix = get_vix_data()
