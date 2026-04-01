@@ -96,7 +96,7 @@ def plot_vix_interactive(df_vix):
 
     # 3. VIX Lines
     line_configs = {
-        'Taiwan_VIX': {'color': '#00A86B', 'name': 'Taiwan VIX (台指 VIX)', 'width': 2.5},
+        'Taiwan_VIX': {'color': '#00A86B', 'name': 'Taiwan VIX (台指 VIX)', 'width': 1.5, 'dash': 'solid'},
         'US_VIX': {'color': 'red', 'name': 'US VIX (標普 VIX)', 'width': 1.5, 'dash': 'solid'},
         'Japan_VIX': {'color': '#7f7f7f', 'name': 'Japan VIX (日經 VI)', 'width': 1.5, 'dash': 'dash'}
     }
