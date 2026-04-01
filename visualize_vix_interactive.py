@@ -171,7 +171,7 @@ def plot_vix_interactive(df_vix):
     fig.update_layout(
         title=dict(text='<b>Taiwan VIX vs TAIEX 走勢對照圖</b>', x=0.5, y=0.96, font=dict(size=20, color='#333')),
         template='plotly_white', hovermode='x unified', 
-        height=640, # FIXED HEIGHT
+        height=580, # FIXED HEIGHT
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         margin=dict(l=50, r=50, t=80, b=60),
         annotations=event_annotations + [footer_ann]
