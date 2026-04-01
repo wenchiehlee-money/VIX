@@ -129,7 +129,7 @@ def plot_vix_interactive(df_vix):
         if not pd.isna(current_max):
             max_vix = max(45, current_max * 1.1)
 
-    # 5. Add Historical Crash Events (Top Flags Approach)
+    # 5. Add Historical Crash Events (Bold Vertical Labels)
     df_events = get_event_data()
     if not df_events.empty:
         mask = (df_events['開始日期'] >= start_date) & (df_events['開始日期'] <= end_date)
@@ -147,13 +147,14 @@ def plot_vix_interactive(df_vix):
             event_cat = event.get('類別', '其他')
             color = cat_colors.get(event_cat, 'gray')
             
-            # Vertical line across the whole plot
+            # Bright red or category color vertical line
             fig.add_vline(
                 x=event_date, 
-                line_width=1.5, 
-                line_dash="solid", 
-                line_color="rgba(200, 200, 200, 0.3)",
-                layer="below"
+                line_width=2, 
+                line_dash="dot", 
+                line_color=color,
+                opacity=0.6,
+                layer="above" # Move above data lines
             )
             
             link1 = event.get('Link1', '')
@@ -161,22 +162,21 @@ def plot_vix_interactive(df_vix):
             if pd.notna(link1) and link1:
                 h_text += f"<br><a href='{link1}'>查看來源</a>"
 
-            # Annotation at the TOP (yref='paper', y=1.0)
+            # Label INSIDE the plot area at the top
             fig.add_annotation(
                 x=event_date,
-                y=1.0,
+                y=0.98, # Near top of plot area
                 yref='paper',
-                text=f" 🚩 {event_name}",
+                text=f" {event_name}",
                 showarrow=False,
-                textangle=-90, # Vertical text to save horizontal space
-                xanchor='left',
-                yanchor='bottom',
-                font=dict(size=11, color=color, family="Arial Black"),
+                textangle=-90,
+                xanchor='right',
+                yanchor='top',
+                font=dict(size=12, color=color, family="Arial Black"),
                 bgcolor="rgba(255, 255, 255, 0.8)",
                 bordercolor=color,
-                borderwidth=1,
-                hovertext=h_text,
-                clicktoshow="onoff"
+                borderwidth=2,
+                hovertext=h_text
             )
 
     # Get current time for footer
@@ -186,12 +186,12 @@ def plot_vix_interactive(df_vix):
     # 6. Styling & Layout
     fig.update_layout(
         title=dict(text='<b>Taiwan VIX vs TAIEX 走勢對照圖 (附重大市場事件)</b>', x=0.5, font=dict(size=22, color='#333')),
-        template='plotly_white', hovermode='x unified', height=850, # Increased height to accommodate top flags
-        legend=dict(orientation="h", yanchor="bottom", y=1.08, xanchor="right", x=1),
-        margin=dict(l=50, r=50, t=150, b=50), # Increased top margin for flags
+        template='plotly_white', hovermode='x unified', height=800,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        margin=dict(l=50, r=50, t=100, b=50),
         annotations=[dict(
             text=f"資料更新時間: {timestamp} (CST) | 數據來源: TAIFEX, Yahoo Finance",
-            showarrow=False, xref="paper", yref="paper", x=1, y=-0.08, font=dict(size=10, color="gray")
+            showarrow=False, xref="paper", yref="paper", x=1, y=-0.1, font=dict(size=10, color="gray")
         )]
     )
 
