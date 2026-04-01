@@ -129,12 +129,13 @@ def plot_vix_interactive(df_vix):
         if not pd.isna(current_max):
             max_vix = max(45, current_max * 1.1)
 
-    # 5. Add Historical Crash Events (Bold Vertical Labels)
+    # 5. Add Historical Crash Events
     df_events = get_event_data()
+    event_annotations = []
     if not df_events.empty:
         mask = (df_events['開始日期'] >= start_date) & (df_events['開始日期'] <= end_date)
         df_plot_events = df_events.loc[mask].sort_values('開始日期')
-        print(f"Plotting {len(df_plot_events)} events out of {len(df_events)} total events.")
+        print(f"Plotting {len(df_plot_events)} events.")
         
         cat_colors = {
             '金融危機': '#9467bd', '地緣政治': '#d62728', '政策衝擊': '#ff7f0e',
@@ -148,52 +149,48 @@ def plot_vix_interactive(df_vix):
             event_cat = event.get('類別', '其他')
             color = cat_colors.get(event_cat, 'gray')
             
-            # Thick colorful vertical line
-            fig.add_vline(
-                x=event_date, 
-                line_width=3, 
-                line_dash="dot", 
-                line_color=color,
-                opacity=0.4,
-                layer="above"
-            )
+            # Vertical line
+            fig.add_vline(x=event_date, line_width=2, line_dash="dot", line_color=color, opacity=0.5)
             
             link1 = event.get('Link1', '')
             h_text = f"<b>{event_name}</b> ({event_cat})<br>日期: {event_date.date()}<br>{event_note}"
             if pd.notna(link1) and link1:
                 h_text += f"<br><a href='{link1}'>查看來源</a>"
 
-            # Label positioned significantly above the data area
-            fig.add_annotation(
+            # Create annotation for this event
+            event_annotations.append(dict(
                 x=event_date,
-                y=1.12, # Outside the plot area
+                y=1.02, # Top of plotting area
                 yref='paper',
                 text=f"🚩 {event_name}",
                 showarrow=False,
                 textangle=-90,
                 xanchor='center',
                 yanchor='bottom',
-                font=dict(size=14, color=color, family="Arial Black"),
-                bgcolor="white",
+                font=dict(size=12, color=color, family="Arial Black"),
+                bgcolor="rgba(255, 255, 255, 0.9)",
                 bordercolor=color,
                 borderwidth=2,
                 hovertext=h_text
-            )
+            ))
 
     # Get current time for footer
     cst = pytz.timezone('Asia/Taipei')
     timestamp = datetime.now(cst).strftime('%Y-%m-%d %H:%M:%S')
 
+    # Footer annotation
+    footer_ann = dict(
+        text=f"資料更新時間: {timestamp} (CST) | 數據來源: TAIFEX, Yahoo Finance",
+        showarrow=False, xref="paper", yref="paper", x=1, y=-0.08, font=dict(size=10, color="gray")
+    )
+
     # 6. Styling & Layout
     fig.update_layout(
         title=dict(text='<b>Taiwan VIX vs TAIEX 走勢對照圖 (附重大市場事件)</b>', x=0.5, y=0.98, font=dict(size=24, color='#333')),
-        template='plotly_white', hovermode='x unified', height=1000,
-        legend=dict(orientation="h", yanchor="bottom", y=1.15, xanchor="right", x=1),
-        margin=dict(l=50, r=50, t=250, b=50), # Large top margin for flags
-        annotations=[dict(
-            text=f"資料更新時間: {timestamp} (CST) | 數據來源: TAIFEX, Yahoo Finance",
-            showarrow=False, xref="paper", yref="paper", x=1, y=-0.08, font=dict(size=10, color="gray")
-        )]
+        template='plotly_white', hovermode='x unified', height=900,
+        legend=dict(orientation="h", yanchor="bottom", y=1.1, xanchor="right", x=1),
+        margin=dict(l=50, r=50, t=200, b=80),
+        annotations=event_annotations + [footer_ann] # Combine all annotations
     )
 
     fig.update_xaxes(
