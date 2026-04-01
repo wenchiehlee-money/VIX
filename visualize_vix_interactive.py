@@ -8,6 +8,7 @@ import pytz
 
 # Configuration
 csv_file = "global_vix_merged.csv"
+event_file = "raw_event_historical_crashes.csv"
 output_html = "index.html"
 years_back = 5
 
@@ -20,6 +21,24 @@ def get_vix_data():
             return df
         except Exception as e:
             print(f"Error reading CSV: {e}")
+    return pd.DataFrame()
+
+def get_event_data():
+    """Load historical crash events from CSV."""
+    if os.path.exists(event_file):
+        print(f"Loading events from {event_file}...")
+        try:
+            # Handle potential encoding issues (UTF-8 with BOM is common)
+            try:
+                df = pd.read_csv(event_file, encoding='utf-8-sig')
+            except:
+                df = pd.read_csv(event_file, encoding='utf-8')
+            
+            df['開始日期'] = pd.to_datetime(df['開始日期'], errors='coerce')
+            df = df.dropna(subset=['開始日期'])
+            return df
+        except Exception as e:
+            print(f"Error reading events CSV: {e}")
     return pd.DataFrame()
 
 def get_taiex_data(start_date, end_date):
@@ -58,7 +77,6 @@ def plot_vix_interactive(df_vix):
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
     # 1. Add TAIEX as background (Secondary Y-axis)
-    # Using a light gray area to represent the market trend without distracting from VIX
     if 'TAIEX' in df.columns:
         fig.add_trace(
             go.Scatter(
@@ -105,44 +123,67 @@ def plot_vix_interactive(df_vix):
     # 4. Add threshold line at 30
     fig.add_hline(y=30, line_dash="dash", line_color="rgba(200, 0, 0, 0.5)", line_width=1, secondary_y=False)
 
+    # Calculate max VIX for scaling and positioning
+    existing_vix_cols = [col for col in line_configs.keys() if col in df.columns]
+    max_vix = 45
+    if existing_vix_cols:
+        current_max = df[existing_vix_cols].max().max()
+        if not pd.isna(current_max):
+            max_vix = max(45, current_max * 1.1)
+
+    # 5. Add Historical Crash Events (Annotations in VIX > 30 zone)
+    df_events = get_event_data()
+    if not df_events.empty:
+        mask = (df_events['開始日期'] >= start_date) & (df_events['開始日期'] <= end_date)
+        df_plot_events = df_events.loc[mask].sort_values('開始日期')
+        
+        cat_colors = {
+            '金融危機': '#9467bd', '地緣政治': '#d62728', '政策衝擊': '#ff7f0e',
+            '公共衛生': '#2ca02c', '自然災害': '#17becf'
+        }
+
+        for i, (_, event) in enumerate(df_plot_events.iterrows()):
+            event_date = event['開始日期']
+            event_name = event['事件名稱']
+            event_note = event.get('備註', '')
+            event_cat = event.get('類別', '其他')
+            color = cat_colors.get(event_cat, 'gray')
+            
+            fig.add_vline(x=event_date, line_width=1, line_dash="dot", line_color="rgba(150, 150, 150, 0.4)")
+            
+            y_pos = 35 + (i % 3) * 3 
+            if y_pos > max_vix * 0.9: y_pos = max_vix * 0.8
+
+            link1 = event.get('Link1', '')
+            h_text = f"<b>{event_name}</b> ({event_cat})<br>日期: {event_date.date()}<br>{event_note}"
+            if pd.notna(link1) and link1:
+                h_text += f"<br><a href='{link1}'>查看來源</a>"
+
+            fig.add_annotation(
+                x=event_date, y=y_pos, text=f"<b>{event_name}</b>",
+                showarrow=True, arrowhead=2, ax=40 if (i % 2) == 0 else -40, ay=0,
+                font=dict(size=10, color=color), bgcolor="rgba(255, 255, 255, 0.9)",
+                bordercolor=color, borderwidth=1, hovertext=h_text
+            )
+
     # Get current time for footer
     cst = pytz.timezone('Asia/Taipei')
     timestamp = datetime.now(cst).strftime('%Y-%m-%d %H:%M:%S')
 
-    # 5. Styling & Layout
+    # 6. Styling & Layout
     fig.update_layout(
-        title=dict(
-            text='<b>Taiwan VIX vs TAIEX 走勢對照圖</b>',
-            x=0.5,
-            font=dict(size=22, color='#333')
-        ),
-        template='plotly_white',
-        hovermode='x unified',
-        height=700,
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1
-        ),
+        title=dict(text='<b>Taiwan VIX vs TAIEX 走勢對照圖 (附重大市場事件)</b>', x=0.5, font=dict(size=22, color='#333')),
+        template='plotly_white', hovermode='x unified', height=700,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         margin=dict(l=50, r=50, t=100, b=50),
-        annotations=[
-            dict(
-                text=f"資料更新時間: {timestamp} (CST) | 數據來源: TAIFEX, Yahoo Finance",
-                showarrow=False,
-                xref="paper", yref="paper",
-                x=1, y=-0.12,
-                font=dict(size=10, color="gray")
-            )
-        ]
+        annotations=[dict(
+            text=f"資料更新時間: {timestamp} (CST) | 數據來源: TAIFEX, Yahoo Finance",
+            showarrow=False, xref="paper", yref="paper", x=1, y=-0.12, font=dict(size=10, color="gray")
+        )]
     )
 
-    # Configure X-axis with range selector (MacroMicro style)
     fig.update_xaxes(
-        title='日期',
-        showgrid=True,
-        gridcolor='#f0f0f0',
+        title='日期', showgrid=True, gridcolor='#f0f0f0',
         rangeselector=dict(
             buttons=list([
                 dict(count=1, label="1M", step="month", stepmode="backward"),
@@ -152,44 +193,15 @@ def plot_vix_interactive(df_vix):
                 dict(count=3, label="3Y", step="year", stepmode="backward"),
                 dict(step="all", label="全部")
             ]),
-            font=dict(size=11),
-            bgcolor="white",
-            activecolor="#e6f2ff"
+            font=dict(size=11), bgcolor="white", activecolor="#e6f2ff"
         ),
         rangeslider=dict(visible=True, thickness=0.04)
     )
 
-    # Configure Y-axes
-    # Get max value of existing VIX columns for range calculation
-    existing_vix_cols = [col for col in line_configs.keys() if col in df.columns]
-    max_vix = 45 # default min-max
-    if existing_vix_cols:
-        current_max = df[existing_vix_cols].max().max()
-        if not pd.isna(current_max):
-            max_vix = max(45, current_max * 1.1)
+    fig.update_yaxes(title_text="<b>VIX 指數值</b>", secondary_y=False, range=[0, max_vix], gridcolor='#f0f0f0')
+    fig.update_yaxes(title_text="TAIEX 指數", secondary_y=True, showgrid=False)
 
-    fig.update_yaxes(
-        title_text="<b>VIX 指數值</b>", 
-        secondary_y=False, 
-        range=[0, max_vix],
-        gridcolor='#f0f0f0'
-    )
-    fig.update_yaxes(
-        title_text="TAIEX 指數", 
-        secondary_y=True, 
-        showgrid=False
-    )
-
-    # Save as interactive HTML
-    fig.write_html(
-        output_html,
-        include_plotlyjs='cdn',
-        config={
-            'displayModeBar': True,
-            'displaylogo': False,
-            'modeBarButtonsToRemove': ['lasso2d', 'select2d'],
-        }
-    )
+    fig.write_html(output_html, include_plotlyjs='cdn', config={'displayModeBar': True, 'displaylogo': False})
     print(f"Professional interactive chart saved to {output_html}")
 
 if __name__ == "__main__":
