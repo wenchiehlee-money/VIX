@@ -56,7 +56,7 @@ def get_taiex_data(start_date, end_date):
     return pd.DataFrame()
 
 def plot_vix_interactive(df_vix):
-    """Create interactive chart: 640px height, 85:15 Main:Slider ratio, overlaid VIX/TAIEX."""
+    """Create interactive chart: 580px height, 85:15 Main:Slider ratio, 100% height overlaid VIX/TAIEX."""
     if df_vix.empty:
         print("No VIX data to plot.")
         return
@@ -76,7 +76,7 @@ def plot_vix_interactive(df_vix):
     # Create figure with secondary Y-axis (Overlaid mode)
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-    # 1. Add TAIEX (Secondary Y-axis)
+    # 1. Add TAIEX (Secondary Y-axis, 100% height)
     if 'TAIEX' in df.columns:
         fig.add_trace(
             go.Scatter(
@@ -88,7 +88,7 @@ def plot_vix_interactive(df_vix):
             secondary_y=True,
         )
 
-    # 2. Add VIX lines (Primary Y-axis)
+    # 2. Add VIX lines (Primary Y-axis, 100% height)
     line_configs = {
         'Taiwan_VIX': {'color': '#00A86B', 'name': 'Taiwan VIX (台指 VIX)', 'width': 1.5, 'dash': 'solid'},
         'US_VIX': {'color': 'red', 'name': 'US VIX (標普 VIX)', 'width': 1.5, 'dash': 'solid'},
@@ -106,7 +106,7 @@ def plot_vix_interactive(df_vix):
                 secondary_y=False,
             )
 
-    # 3. Risk Zones (Overlaid)
+    # 3. Risk Zones
     fig.add_hrect(y0=0, y1=15, fillcolor="green", opacity=0.05, layer="below", line_width=0, secondary_y=False)
     fig.add_hrect(y0=20, y1=30, fillcolor="orange", opacity=0.08, layer="below", line_width=0, secondary_y=False)
     fig.add_hrect(y0=30, y1=100, fillcolor="red", opacity=0.08, layer="below", line_width=0, secondary_y=False)
@@ -132,7 +132,6 @@ def plot_vix_interactive(df_vix):
             event_cat = event.get('類別', '其他')
             color = cat_colors.get(event_cat, 'gray')
             
-            # Shaded Background Region
             fig.add_vrect(
                 x0=s_date, x1=e_date, fillcolor=color, opacity=0.15,
                 layer="below", line_width=0
@@ -140,7 +139,6 @@ def plot_vix_interactive(df_vix):
             
             h_text = f"<b>{event_name}</b> ({event_cat})<br>期間: {s_date.date()} ~ {e_date.date()}<br>{event_note}"
 
-            # Flag icon
             event_annotations.append(dict(
                 x=s_date, y=1.0, yref='paper',
                 text="🚩", showarrow=False, xanchor='left',
@@ -167,11 +165,11 @@ def plot_vix_interactive(df_vix):
         showarrow=False, xref="paper", yref="paper", x=1, y=-0.15, font=dict(size=10, color="gray")
     )
 
-    # 5. Layout & Scaling
+    # 5. Layout
     fig.update_layout(
         title=dict(text='<b>Taiwan VIX vs TAIEX 走勢對照圖</b>', x=0.5, y=0.96, font=dict(size=20, color='#333')),
         template='plotly_white', hovermode='x unified', 
-        height=580, # FIXED HEIGHT
+        height=580, # FIXED HEIGHT 580px
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         margin=dict(l=50, r=50, t=80, b=60),
         annotations=event_annotations + [footer_ann]
@@ -194,11 +192,12 @@ def plot_vix_interactive(df_vix):
         rangeslider=dict(visible=True, thickness=0.15)
     )
 
+    # 100% Height Overlay configuration
     fig.update_yaxes(title_text="VIX 指數", range=[0, max_vix], gridcolor='#f0f0f0', secondary_y=False)
     fig.update_yaxes(title_text="TAIEX 指數", showgrid=False, secondary_y=True)
 
     fig.write_html(output_html, include_plotlyjs='cdn', config={'displayModeBar': True, 'displaylogo': False})
-    print(f"Interactive chart (640px, 85:15) saved to {output_html}")
+    print(f"Interactive chart (580px, 85:15 ratio, 100% overlay) saved to {output_html}")
 
 if __name__ == "__main__":
     df_vix = get_vix_data()
