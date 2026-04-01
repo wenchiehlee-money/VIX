@@ -28,7 +28,6 @@ def get_event_data():
     if os.path.exists(event_file):
         print(f"Loading events from {event_file}...")
         try:
-            # Handle potential encoding issues (UTF-8 with BOM is common)
             try:
                 df = pd.read_csv(event_file, encoding='utf-8-sig')
             except:
@@ -47,7 +46,6 @@ def get_taiex_data(start_date, end_date):
     try:
         taiex = yf.download("^TWII", start=start_date, end=end_date)
         if not taiex.empty:
-            # Handle multi-index columns if necessary (yfinance v0.2.40+)
             if isinstance(taiex.columns, pd.MultiIndex):
                 taiex.columns = taiex.columns.get_level_values(0)
             return taiex[['Close']].rename(columns={'Close': 'TAIEX'})
@@ -71,7 +69,7 @@ def plot_vix_interactive(df_vix):
     
     # Merge data
     df = df_vix.join(df_taiex, how='left')
-    df = df.ffill() # Fill missing TAIEX values (weekends/holidays)
+    df = df.ffill()
 
     # Create figure with secondary y-axis
     fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -123,7 +121,7 @@ def plot_vix_interactive(df_vix):
     # 4. Add threshold line at 30
     fig.add_hline(y=30, line_dash="dash", line_color="rgba(200, 0, 0, 0.5)", line_width=1, secondary_y=False)
 
-    # Calculate max VIX for scaling and positioning
+    # Calculate max VIX for scaling
     existing_vix_cols = [col for col in line_configs.keys() if col in df.columns]
     max_vix = 45
     if existing_vix_cols:
@@ -131,7 +129,7 @@ def plot_vix_interactive(df_vix):
         if not pd.isna(current_max):
             max_vix = max(45, current_max * 1.1)
 
-    # 5. Add Historical Crash Events (Annotations in VIX > 30 zone)
+    # 5. Add Historical Crash Events (Top Flags Approach)
     df_events = get_event_data()
     if not df_events.empty:
         mask = (df_events['開始日期'] >= start_date) & (df_events['開始日期'] <= end_date)
@@ -149,21 +147,36 @@ def plot_vix_interactive(df_vix):
             event_cat = event.get('類別', '其他')
             color = cat_colors.get(event_cat, 'gray')
             
-            fig.add_vline(x=event_date, line_width=1, line_dash="dot", line_color="rgba(150, 150, 150, 0.4)")
+            # Vertical line across the whole plot
+            fig.add_vline(
+                x=event_date, 
+                line_width=1.5, 
+                line_dash="solid", 
+                line_color="rgba(200, 200, 200, 0.3)",
+                layer="below"
+            )
             
-            y_pos = 35 + (i % 3) * 3 
-            if y_pos > max_vix * 0.9: y_pos = max_vix * 0.8
-
             link1 = event.get('Link1', '')
             h_text = f"<b>{event_name}</b> ({event_cat})<br>日期: {event_date.date()}<br>{event_note}"
             if pd.notna(link1) and link1:
                 h_text += f"<br><a href='{link1}'>查看來源</a>"
 
+            # Annotation at the TOP (yref='paper', y=1.0)
             fig.add_annotation(
-                x=event_date, y=y_pos, text=f"<b>{event_name}</b>",
-                showarrow=True, arrowhead=2, ax=40 if (i % 2) == 0 else -40, ay=0,
-                font=dict(size=10, color=color), bgcolor="rgba(255, 255, 255, 0.9)",
-                bordercolor=color, borderwidth=1, hovertext=h_text
+                x=event_date,
+                y=1.0,
+                yref='paper',
+                text=f" 🚩 {event_name}",
+                showarrow=False,
+                textangle=-90, # Vertical text to save horizontal space
+                xanchor='left',
+                yanchor='bottom',
+                font=dict(size=11, color=color, family="Arial Black"),
+                bgcolor="rgba(255, 255, 255, 0.8)",
+                bordercolor=color,
+                borderwidth=1,
+                hovertext=h_text,
+                clicktoshow="onoff"
             )
 
     # Get current time for footer
@@ -173,12 +186,12 @@ def plot_vix_interactive(df_vix):
     # 6. Styling & Layout
     fig.update_layout(
         title=dict(text='<b>Taiwan VIX vs TAIEX 走勢對照圖 (附重大市場事件)</b>', x=0.5, font=dict(size=22, color='#333')),
-        template='plotly_white', hovermode='x unified', height=700,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        margin=dict(l=50, r=50, t=100, b=50),
+        template='plotly_white', hovermode='x unified', height=850, # Increased height to accommodate top flags
+        legend=dict(orientation="h", yanchor="bottom", y=1.08, xanchor="right", x=1),
+        margin=dict(l=50, r=50, t=150, b=50), # Increased top margin for flags
         annotations=[dict(
             text=f"資料更新時間: {timestamp} (CST) | 數據來源: TAIFEX, Yahoo Finance",
-            showarrow=False, xref="paper", yref="paper", x=1, y=-0.12, font=dict(size=10, color="gray")
+            showarrow=False, xref="paper", yref="paper", x=1, y=-0.08, font=dict(size=10, color="gray")
         )]
     )
 
