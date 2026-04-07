@@ -34,18 +34,47 @@ def get_latest_taiwan_vix():
     except Exception as e:
         return f"Error: {e}", "N/A"
 
+def get_vix_sentiment(value):
+    """Return sentiment label based on VIX value."""
+    try:
+        val = float(value)
+        if val <= 15:
+            return "平穩"
+        elif val <= 20:
+            return "溫和波動"
+        elif val <= 25:
+            return "市場關注"
+        elif val <= 30:
+            return "市場動盪"
+        else:
+            return "加重動盪"
+    except:
+        return ""
+
 def update_readme_with_vix(us_vix_value, taiwan_vix_value, taiwan_vix_date):
     readme_path = "README.md"
 
     with open(readme_path, 'r', encoding='utf-8') as f:
         content = f.read()
 
+    us_sentiment = get_vix_sentiment(us_vix_value)
+    taiwan_sentiment = get_vix_sentiment(taiwan_vix_value)
+
+    us_display = f'**{us_vix_value}** ({us_sentiment})' if us_sentiment else f'**{us_vix_value}**'
+    taiwan_display = f'**{taiwan_vix_value}** ({taiwan_sentiment})' if taiwan_sentiment else f'**{taiwan_vix_value}**'
+
     # Update US VIX
-    new_content = re.sub(r'<!-- LATEST_US_VIX_DATA -->', f'**{us_vix_value}**', content)
+    # Support both the comment placeholder and the direct pattern
+    if '<!-- LATEST_US_VIX_DATA -->' in content:
+        new_content = re.sub(r'<!-- LATEST_US_VIX_DATA -->', us_display, content)
+    else:
+        us_pattern = r'\*\s+\*\*US VIX \(\^VIX\)\*\*:.*'
+        us_replacement = f'*   **US VIX (^VIX)**: {us_display}'
+        new_content = re.sub(us_pattern, us_replacement, content)
 
     # Update Taiwan VIX line
     taiwan_pattern = r'\*\s+\*\*Taiwan VIX \(VIXTWN\)\*\*:.*'
-    taiwan_replacement = f'*   **Taiwan VIX (VIXTWN)**: **{taiwan_vix_value}** (as of {taiwan_vix_date}, automatically collected from TAIFEX)'
+    taiwan_replacement = f'*   **Taiwan VIX (VIXTWN)**: {taiwan_display} (as of {taiwan_vix_date}, automatically collected from TAIFEX)'
     new_content = re.sub(taiwan_pattern, taiwan_replacement, new_content)
 
     # Generate timestamp in CST
@@ -53,9 +82,11 @@ def update_readme_with_vix(us_vix_value, taiwan_vix_value, taiwan_vix_date):
     timestamp = datetime.now(cst).strftime('%Y-%m-%d %H:%M:%S CST')
     timestamp_line = f'產生時間: {timestamp}\n\n'
 
-    # Replace existing timestamp or add new one before the chart image
-    # Pattern: Find any existing timestamp line before the chart, or just the chart line itself
-    chart_pattern = r'(產生時間: .*?\n\n)?(\!\[VIX Chart\]\(vix_chart\.(png|svg)\))'
+    # Clean up ANY existing "產生時間" lines before adding the new one
+    new_content = re.sub(r'產生時間: .*?\n\n', '', new_content)
+
+    # Insert the new timestamp before the chart image
+    chart_pattern = r'(\!\[VIX Chart\]\(vix_chart\.(png|svg)\))'
     new_content = re.sub(chart_pattern, timestamp_line + r'![VIX Chart](vix_chart.svg)', new_content)
 
     with open(readme_path, 'w', encoding='utf-8') as f:

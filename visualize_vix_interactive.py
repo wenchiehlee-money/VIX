@@ -106,11 +106,21 @@ def plot_vix_interactive(df_vix):
                 secondary_y=False,
             )
 
-    # 3. Risk Zones
-    fig.add_hrect(y0=0, y1=15, fillcolor="green", opacity=0.05, layer="below", line_width=0, secondary_y=False)
-    fig.add_hrect(y0=20, y1=30, fillcolor="orange", opacity=0.08, layer="below", line_width=0, secondary_y=False)
-    fig.add_hrect(y0=30, y1=100, fillcolor="red", opacity=0.08, layer="below", line_width=0, secondary_y=False)
-    fig.add_hline(y=30, line_dash="dash", line_color="rgba(200, 0, 0, 0.5)", line_width=1, secondary_y=False)
+    # 3. Risk Zones (Matching the 5 categories from reference image)
+    # 0-15: 平穩 (#66A36E)
+    fig.add_hrect(y0=0, y1=15, fillcolor="#66A36E", opacity=0.1, layer="below", line_width=0, secondary_y=False)
+    # 15-20: 溫和波動 (#ABD398)
+    fig.add_hrect(y0=15, y1=20, fillcolor="#ABD398", opacity=0.12, layer="below", line_width=0, secondary_y=False)
+    # 20-25: 市場關注 (#F9E79F)
+    fig.add_hrect(y0=20, y1=25, fillcolor="#F9E79F", opacity=0.15, layer="below", line_width=0, secondary_y=False)
+    # 25-30: 市場動盪 (#F5B074)
+    fig.add_hrect(y0=25, y1=30, fillcolor="#F5B074", opacity=0.15, layer="below", line_width=0, secondary_y=False)
+    # >30: 加重動盪 (#EC7063)
+    fig.add_hrect(y0=30, y1=100, fillcolor="#EC7063", opacity=0.12, layer="below", line_width=0, secondary_y=False)
+    
+    # Panic Level Line
+    fig.add_hline(y=30, line_dash="dash", line_color="rgba(200, 0, 0, 0.6)", line_width=2, 
+                  annotation_text="恐慌臨界點 (30)", annotation_position="top left", secondary_y=False)
 
     # 4. Historical Events
     df_events = get_event_data()
