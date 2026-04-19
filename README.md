@@ -54,7 +54,7 @@ python visualize_vix_interactive.py
 - **US_VIX**：4,083 筆，2010-01-04 ~ 2026-03-27
 - **Taiwan_VIX**：2,386 筆，2016-11-25 ~ 2026-03-27
 
-產生時間: 2026-04-18 22:36:45 CST
+產生時間: 2026-04-19 22:37:00 CST
 
 ![VIX Chart](vix_chart.svg)
 
