@@ -45,16 +45,16 @@ python visualize_vix_interactive.py
 
 ## Current VIX Data
 
-*   **US VIX (^VIX)**: **19.16** (溫和波動)
+*   **US VIX (^VIX)**: **18.87** (溫和波動)
 *   **Japan VIX (Nikkei VI)**: Manual download required. Please refer to financial news sources or the Nikkei website.
-*   **Taiwan VIX (VIXTWN)**: **29.52** (市場動盪) (as of 2026-04-22, automatically collected from TAIFEX)
+*   **Taiwan VIX (VIXTWN)**: **32.81** (加重動盪) (as of 2026-04-23, automatically collected from TAIFEX)
 
 ### Historical Trend
 
 - **US_VIX**：4,083 筆，2010-01-04 ~ 2026-03-27
 - **Taiwan_VIX**：2,386 筆，2016-11-25 ~ 2026-03-27
 
-產生時間: 2026-04-22 23:07:13 CST
+產生時間: 2026-04-23 23:46:42 CST
 
 ![VIX Chart](vix_chart.svg)
 
