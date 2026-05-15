@@ -7,6 +7,7 @@ import matplotlib
 import platform
 
 # Configure Chinese font support
+matplotlib.rcParams['svg.fonttype'] = 'path'  # Render text as paths for consistent SVG display
 if platform.system() == 'Windows':
     matplotlib.rcParams['font.sans-serif'] = ['Microsoft JhengHei', 'Microsoft YaHei', 'SimHei', 'Arial Unicode MS']
 elif platform.system() == 'Linux':

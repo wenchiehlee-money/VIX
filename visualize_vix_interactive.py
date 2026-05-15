@@ -10,7 +10,7 @@ import pytz
 csv_file = "global_vix_merged.csv"
 event_file = "raw_event_historical_crashes.csv"
 output_html = "index.html"
-years_back = 5
+years_back = 40  # Increased to show full historical range from 1990 onwards
 
 def get_vix_data():
     """Load VIX data from CSV file."""
@@ -61,17 +61,28 @@ def plot_vix_interactive(df_vix):
         print("No VIX data to plot.")
         return
 
-    # Filter for last 5 years
+    # Filter for requested range
     end_date = df_vix.index.max()
     start_date = end_date - timedelta(days=years_back * 365)
-    df_vix = df_vix.loc[start_date:end_date]
+    
+    # Create a full date range for the requested period
+    full_range = pd.date_range(start=start_date, end=end_date, freq='D')
+    df_base = pd.DataFrame(index=full_range)
+    df_base.index.name = 'Date'
+
+    # Filter VIX data
+    df_vix = df_vix.loc[df_vix.index >= start_date]
 
     # Fetch TAIEX data
     df_taiex = get_taiex_data(start_date - timedelta(days=5), end_date + timedelta(days=1))
     
-    # Merge
-    df = df_vix.join(df_taiex, how='left')
-    df = df.ffill()
+    # Merge: base range + VIX + TAIEX
+    df = df_base.join(df_vix, how='left').join(df_taiex, how='left')
+    df = df.ffill() # Forward fill to handle weekends/holidays
+
+    # Drop rows where we have NO data (neither VIX nor TAIEX) to keep chart clean
+    available_cols = [c for c in ['US_VIX', 'Taiwan_VIX', 'Japan_VIX', 'TAIEX'] if c in df.columns]
+    df = df.dropna(subset=available_cols, how='all')
 
     # Create figure with secondary Y-axis (Overlaid mode)
     fig = make_subplots(specs=[[{"secondary_y": True}]])
