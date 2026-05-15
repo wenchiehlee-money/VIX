@@ -33,6 +33,11 @@ def get_event_data():
             except:
                 df = pd.read_csv(event_file, encoding='utf-8')
             
+            # Clean up the date columns - remove extra quotes and spaces
+            for col in ['開始日期', '結束日期']:
+                if col in df.columns:
+                    df[col] = df[col].astype(str).str.replace('"', '').str.strip()
+            
             df['開始日期'] = pd.to_datetime(df['開始日期'], errors='coerce')
             df['結束日期'] = pd.to_datetime(df['結束日期'], errors='coerce')
             df = df.dropna(subset=['開始日期'])
@@ -61,9 +66,9 @@ def plot_vix_interactive(df_vix):
         print("No VIX data to plot.")
         return
 
-    # Filter for requested range
+    # Filter for requested range (Start from 2010 as per user request)
     end_date = df_vix.index.max()
-    start_date = end_date - timedelta(days=years_back * 365)
+    start_date = datetime(2010, 1, 1)
     
     # Create a full date range for the requested period
     full_range = pd.date_range(start=start_date, end=end_date, freq='D')
