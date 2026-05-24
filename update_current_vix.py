@@ -1,3 +1,5 @@
+import sys
+sys.stdout.reconfigure(encoding="utf-8")
 import yfinance as yf
 import pandas as pd
 import re
@@ -121,9 +123,89 @@ def update_readme_with_vix(us_vix_value, taiwan_vix_value, taiwan_vix_date, cnn_
     print(f"Updated README.md with CNN Fear & Greed Index: {cnn_fg_value} ({cnn_fg_rating})")
     print(f"Updated README.md with timestamp: {timestamp}")
 
+def get_vix_risk_level(us_vix, tw_vix, cnn_fg):
+    """計算複合風險分數 (0-100) 與配置建議。"""
+    try:
+        u = float(us_vix)
+        us_score = 10 if u < 15 else (30 if u < 20 else (55 if u < 25 else (75 if u < 30 else 95)))
+    except: us_score = 50
+    try:
+        t = float(tw_vix)
+        tw_score = 10 if t < 20 else (35 if t < 30 else (55 if t < 40 else (75 if t < 50 else 95)))
+    except: tw_score = 50
+    try:
+        c = float(cnn_fg)
+        cnn_score = 90 if c < 15 else (65 if c < 25 else (45 if c < 45 else (25 if c < 55 else (35 if c < 75 else 60))))
+    except: cnn_score = 35
+    composite = round(us_score * 0.4 + tw_score * 0.4 + cnn_score * 0.2)
+    if composite < 25:   level, park_pct = "低風險",    70
+    elif composite < 50: level, park_pct = "中低風險",  55
+    elif composite < 70: level, park_pct = "中高風險",  35
+    elif composite < 85: level, park_pct = "高風險",    15
+    else:                level, park_pct = "進場訊號",   0
+    return composite, level, park_pct, 100 - park_pct
+
+
+def write_current_vix_csv(us_vix, tw_vix, tw_date, cnn_fg, cnn_rating, cnn_date):
+    """輸出 current_vix.csv 供 Google Sheets IMPORTDATA 使用。"""
+    composite, level, park_pct, bank_pct = get_vix_risk_level(us_vix, tw_vix, cnn_fg)
+    cst = pytz.timezone('Asia/Taipei')
+    updated = datetime.now(cst).strftime('%Y-%m-%d %H:%M')
+    lines = [
+        "metric,value,sentiment,date",
+        f"US_VIX,{us_vix},{get_vix_sentiment(us_vix)},{updated}",
+        f"TW_VIX,{tw_vix},{get_vix_sentiment(tw_vix)},{tw_date}",
+        f"CNN_FG,{cnn_fg},{cnn_rating},{cnn_date}",
+        f"COMPOSITE,{composite},{level},{updated}",
+        f"PARK_PCT,{park_pct},停泊股%,{updated}",
+        f"BANK_PCT,{bank_pct},銀行現金%,{updated}",
+    ]
+    with open("current_vix.csv", "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+    print(f"寫入 current_vix.csv（複合分數={composite}，{level}，停泊股{park_pct}%）")
+
+
+def update_readme_placeholders(us_vix, tw_vix, tw_date, cnn_fg, cnn_rating, cnn_date):
+    """用 HTML comment 標籤更新 README 中的佔位值。"""
+    readme_path = "README.md"
+    with open(readme_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    def replace_tag(text, tag, value):
+        return re.sub(rf'<!-- {tag} -->.*?<!-- /{tag} -->', f'<!-- {tag} -->{value}<!-- /{tag} -->', text, flags=re.DOTALL)
+
+    us_sent  = get_vix_sentiment(us_vix)
+    tw_sent  = get_vix_sentiment(tw_vix)
+    composite, level, park_pct, bank_pct = get_vix_risk_level(us_vix, tw_vix, cnn_fg)
+
+    content = replace_tag(content, "US_VIX_VAL",  f"**{us_vix}**")
+    content = replace_tag(content, "US_VIX_SENT", us_sent)
+    content = replace_tag(content, "TW_VIX_VAL",  f"**{tw_vix}**")
+    content = replace_tag(content, "TW_VIX_SENT", tw_sent)
+    content = replace_tag(content, "TW_VIX_DATE", tw_date)
+    content = replace_tag(content, "CNN_FG_VAL",  f"**{cnn_fg}**")
+    content = replace_tag(content, "CNN_FG_SENT", cnn_rating)
+    content = replace_tag(content, "CNN_FG_DATE", cnn_date)
+
+    cst = pytz.timezone('Asia/Taipei')
+    timestamp = datetime.now(cst).strftime('%Y-%m-%d %H:%M:%S CST')
+    content = re.sub(r'產生時間: .*?\n', f'產生時間: {timestamp}\n', content)
+
+    with open(readme_path, 'w', encoding='utf-8') as f:
+        f.write(content)
+    print(f"更新 README.md（複合分數={composite} {level}）")
+
+
 if __name__ == "__main__":
     print("Fetching latest data...")
     latest_us_vix = get_latest_us_vix()
     latest_taiwan_vix, taiwan_vix_date = get_latest_taiwan_vix()
     latest_cnn_val, latest_cnn_rating, latest_cnn_date = get_latest_cnn_fear_greed()
-    update_readme_with_vix(latest_us_vix, latest_taiwan_vix, taiwan_vix_date, latest_cnn_val, latest_cnn_rating, latest_cnn_date)
+
+    # 修正後的 README 更新（用 comment tag 替換，不用舊 regex）
+    update_readme_placeholders(latest_us_vix, latest_taiwan_vix, taiwan_vix_date,
+                               latest_cnn_val, latest_cnn_rating, latest_cnn_date)
+
+    # 新增：輸出 current_vix.csv 供 Google Sheets 使用
+    write_current_vix_csv(latest_us_vix, latest_taiwan_vix, taiwan_vix_date,
+                          latest_cnn_val, latest_cnn_rating, latest_cnn_date)
