@@ -43,19 +43,20 @@ python visualize_vix.py
 python visualize_vix_interactive.py
 ```
 
-## Current VIX Data
+## 市場情緒與波動率概覽 (Current Status)
 
-*   **US VIX (^VIX)**: **16.70** (溫和波動)
-*   **Japan VIX (Nikkei VI)**: Manual download required. Please refer to financial news sources or the Nikkei website.
-*   **Taiwan VIX (VIXTWN)**: **33.09** (加重動盪) (as of 2026-05-22, automatically collected from TAIFEX)
-*   **CNN Fear & Greed Index**: **58.57** (Greed) (as of 2026-05-22, automatically collected from CNN)
+| 指標 | 當前數值 | 市場情緒 / 評級 | 最後更新 |
+| :--- | :---: | :---: | :---: |
+| **美股波動率 (US VIX)** | <!-- US_VIX_VAL -->**N/A**<!-- /US_VIX_VAL --> | <!-- US_VIX_SENT -->N/A<!-- /US_VIX_SENT --> | 實時 (yfinance) |
+| **台指波動率 (Taiwan VIX)** | <!-- TW_VIX_VAL -->**N/A**<!-- /TW_VIX_VAL --> | <!-- TW_VIX_SENT -->N/A<!-- /TW_VIX_SENT --> | <!-- TW_VIX_DATE -->N/A<!-- /TW_VIX_DATE --> |
+| **CNN 恐懼與貪婪指數** | <!-- CNN_FG_VAL -->**N/A**<!-- /CNN_FG_VAL --> | <!-- CNN_FG_SENT -->N/A<!-- /CNN_FG_SENT --> | <!-- CNN_FG_DATE -->N/A<!-- /CNN_FG_DATE --> |
 
 ### Historical Trend
 
-- **US_VIX**：4,083 筆，2010-01-04 ~ 2026-03-27
-- **Taiwan_VIX**：2,386 筆，2016-11-25 ~ 2026-03-27
-
-產生時間: 2026-05-24 17:32:57 CST
+- **US VIX**：<!-- US_VIX_COUNT -->N/A<!-- /US_VIX_COUNT --> 筆，<!-- US_VIX_RANGE -->N/A<!-- /US_VIX_RANGE -->
+- **Taiwan VIX**：<!-- TW_VIX_COUNT -->N/A<!-- /TW_VIX_COUNT --> 筆，<!-- TW_VIX_RANGE -->N/A<!-- /TW_VIX_RANGE -->
+- **CNN Fear & Greed**：<!-- CNN_FG_COUNT -->N/A<!-- /CNN_FG_COUNT --> 筆，<!-- CNN_FG_RANGE -->N/A<!-- /CNN_FG_RANGE -->
+產生時間: 2026-05-24 17:56:16 CST
 
 ![VIX Chart](vix_chart.svg)
 
