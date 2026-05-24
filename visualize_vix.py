@@ -7,14 +7,44 @@ import matplotlib
 import platform
 
 # Configure Chinese font support
-matplotlib.rcParams['svg.fonttype'] = 'path'  # Render text as paths for consistent SVG display
-if platform.system() == 'Windows':
-    matplotlib.rcParams['font.sans-serif'] = ['Microsoft JhengHei', 'Microsoft YaHei', 'SimHei', 'Arial Unicode MS']
-elif platform.system() == 'Linux':
-    matplotlib.rcParams['font.sans-serif'] = ['Noto Sans CJK TC', 'Noto Sans CJK SC', 'WenQuanYi Micro Hei', 'Arial Unicode MS']
-else:  # macOS
-    matplotlib.rcParams['font.sans-serif'] = ['Heiti TC', 'PingFang TC', 'Arial Unicode MS']
-matplotlib.rcParams['axes.unicode_minus'] = False  # Fix minus sign display
+def setup_font():
+    matplotlib.rcParams['svg.fonttype'] = 'path'  # Render text as paths for consistent SVG display
+    matplotlib.rcParams['axes.unicode_minus'] = False  # Fix minus sign display
+    
+    # Comprehensive list of Traditional Chinese fonts across platforms
+    tc_fonts = [
+        'Microsoft JhengHei', 'Microsoft YaHei', 
+        'Noto Sans CJK TC', 'Noto Sans TC', 
+        'PingFang TC', 'Heiti TC', 'STHeiti',
+        'WenQuanYi Micro Hei', 'Arial Unicode MS', 'Droid Sans Fallback'
+    ]
+    
+    # Try to identify available fonts from the list
+    try:
+        from matplotlib import font_manager
+        available_fonts = {f.name for f in font_manager.fontManager.ttflist}
+        
+        # Filter the list to only include fonts that actually exist in the system
+        valid_fonts = [f for f in tc_fonts if f in available_fonts]
+        
+        if valid_fonts:
+            matplotlib.rcParams['font.sans-serif'] = valid_fonts + ['sans-serif']
+            print(f"Selected fonts for CJK: {valid_fonts[0]} (Available: {len(valid_fonts)})")
+        else:
+            # Fallback if none of our preferred fonts are found
+            if platform.system() == 'Linux':
+                matplotlib.rcParams['font.sans-serif'] = ['Noto Sans CJK TC', 'WenQuanYi Micro Hei', 'DejaVu Sans']
+            elif platform.system() == 'Windows':
+                matplotlib.rcParams['font.sans-serif'] = ['Microsoft JhengHei', 'Microsoft YaHei', 'SimHei']
+            else:
+                matplotlib.rcParams['font.sans-serif'] = ['Heiti TC', 'PingFang TC', 'Arial Unicode MS']
+            print("Warning: No preferred Traditional Chinese fonts found in fontManager. Falling back to defaults.")
+    except Exception as e:
+        print(f"Error during font setup: {e}")
+        # Default fallback
+        matplotlib.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'sans-serif']
+
+setup_font()
 
 # Configuration
 csv_file = "global_vix_merged.csv"
