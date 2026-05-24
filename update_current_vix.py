@@ -147,8 +147,7 @@ def get_vix_risk_level(us_vix, tw_vix, cnn_fg):
 
 
 def write_current_vix_csv(us_vix, tw_vix, tw_date, cnn_fg, cnn_rating, cnn_date):
-    """輸出 current_vix.csv 供 Google Sheets IMPORTDATA 使用。"""
-    composite, level, park_pct, bank_pct = get_vix_risk_level(us_vix, tw_vix, cnn_fg)
+    """輸出 current_vix.csv 供 Google Sheets IMPORTDATA 使用（僅原始指數）。"""
     cst = pytz.timezone('Asia/Taipei')
     updated = datetime.now(cst).strftime('%Y-%m-%d %H:%M')
     lines = [
@@ -156,13 +155,10 @@ def write_current_vix_csv(us_vix, tw_vix, tw_date, cnn_fg, cnn_rating, cnn_date)
         f"US_VIX,{us_vix},{get_vix_sentiment(us_vix)},{updated}",
         f"TW_VIX,{tw_vix},{get_vix_sentiment(tw_vix)},{tw_date}",
         f"CNN_FG,{cnn_fg},{cnn_rating},{cnn_date}",
-        f"COMPOSITE,{composite},{level},{updated}",
-        f"PARK_PCT,{park_pct},停泊股%,{updated}",
-        f"BANK_PCT,{bank_pct},銀行現金%,{updated}",
     ]
     with open("current_vix.csv", "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
-    print(f"寫入 current_vix.csv（複合分數={composite}，{level}，停泊股{park_pct}%）")
+    print(f"寫入 current_vix.csv（US={us_vix}, TW={tw_vix}, CNN={cnn_fg}）")
 
 
 def update_readme_placeholders(us_vix, tw_vix, tw_date, cnn_fg, cnn_rating, cnn_date):
