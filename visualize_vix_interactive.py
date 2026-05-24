@@ -60,8 +60,19 @@ def get_taiex_data(start_date, end_date):
         print(f"Error fetching TAIEX: {e}")
     return pd.DataFrame()
 
+def get_cnn_fg_data():
+    """Load CNN Fear & Greed data from CSV."""
+    if os.path.exists("cnn_fear_greed.csv"):
+        print("Loading CNN Fear & Greed data...")
+        try:
+            df = pd.read_csv("cnn_fear_greed.csv", index_col='Date', parse_dates=True)
+            return df[['Fear_Greed_Value']].rename(columns={'Fear_Greed_Value': 'CNN_FG'})
+        except Exception as e:
+            print(f"Error reading CNN CSV: {e}")
+    return pd.DataFrame()
+
 def plot_vix_interactive(df_vix):
-    """Create interactive chart: 580px height, 85:15 Main:Slider ratio, 100% height overlaid VIX/TAIEX."""
+    """Create interactive chart: 580px height, 85:15 Main:Slider ratio, 100% height overlaid VIX/TAIEX/CNN."""
     if df_vix.empty:
         print("No VIX data to plot.")
         return
@@ -81,12 +92,15 @@ def plot_vix_interactive(df_vix):
     # Fetch TAIEX data
     df_taiex = get_taiex_data(start_date - timedelta(days=5), end_date + timedelta(days=1))
     
-    # Merge: base range + VIX + TAIEX
-    df = df_base.join(df_vix, how='left').join(df_taiex, how='left')
+    # Fetch CNN data
+    df_cnn = get_cnn_fg_data()
+
+    # Merge: base range + VIX + TAIEX + CNN
+    df = df_base.join(df_vix, how='left').join(df_taiex, how='left').join(df_cnn, how='left')
     df = df.ffill() # Forward fill to handle weekends/holidays
 
-    # Drop rows where we have NO data (neither VIX nor TAIEX) to keep chart clean
-    available_cols = [c for c in ['US_VIX', 'Taiwan_VIX', 'Japan_VIX', 'TAIEX'] if c in df.columns]
+    # Drop rows where we have NO data to keep chart clean
+    available_cols = [c for c in ['US_VIX', 'Taiwan_VIX', 'Japan_VIX', 'TAIEX', 'CNN_FG'] if c in df.columns]
     df = df.dropna(subset=available_cols, how='all')
 
     # Create figure with secondary Y-axis (Overlaid mode)
@@ -97,14 +111,30 @@ def plot_vix_interactive(df_vix):
         fig.add_trace(
             go.Scatter(
                 x=df.index, y=df['TAIEX'], name="TAIEX (台股指數)",
-                line=dict(color='rgba(31, 119, 180, 0.4)', width=1.5),
+                line=dict(color='rgba(31, 119, 180, 0.3)', width=1),
                 fill='tozeroy', fillcolor='rgba(31, 119, 180, 0.05)',
                 hovertemplate='TAIEX: %{y:,.0f}<extra></extra>'
             ),
             secondary_y=True,
         )
 
-    # 2. Add VIX lines (Primary Y-axis, 100% height)
+    # 2. Add CNN Fear & Greed (Secondary Y-axis, but scaled to index 0-100)
+    # We use secondary Y-axis for CNN as well, but TAIEX is also there.
+    # To avoid visual clutter, CNN will have its own Y-axis range if possible, 
+    # but Plotly standard secondary_y only allows one.
+    # We will share secondary_y with TAIEX but CNN is 0-100.
+    if 'CNN_FG' in df.columns:
+        fig.add_trace(
+            go.Scatter(
+                x=df.index, y=df['CNN_FG'], name="CNN Fear & Greed (美股情緒)",
+                line=dict(color='orange', width=1.5, dash='dot'),
+                hovertemplate='CNN FG: %{y:.1f}<extra></extra>',
+                visible='legendonly' # Start hidden to avoid clutter, user can enable
+            ),
+            secondary_y=False, # Put on primary Y-axis (0-100) same as VIX
+        )
+
+    # 3. Add VIX lines (Primary Y-axis, 100% height)
     line_configs = {
         'Taiwan_VIX': {'color': '#00A86B', 'name': 'Taiwan VIX (台指 VIX)', 'width': 1.5, 'dash': 'solid'},
         'US_VIX': {'color': 'red', 'name': 'US VIX (標普 VIX)', 'width': 1.5, 'dash': 'solid'},

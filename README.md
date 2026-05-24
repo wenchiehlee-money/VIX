@@ -48,13 +48,14 @@ python visualize_vix_interactive.py
 *   **US VIX (^VIX)**: **16.70** (溫和波動)
 *   **Japan VIX (Nikkei VI)**: Manual download required. Please refer to financial news sources or the Nikkei website.
 *   **Taiwan VIX (VIXTWN)**: **33.09** (加重動盪) (as of 2026-05-22, automatically collected from TAIFEX)
+*   **CNN Fear & Greed Index**: **58.57** (Greed) (as of 2026-05-22, automatically collected from CNN)
 
 ### Historical Trend
 
 - **US_VIX**：4,083 筆，2010-01-04 ~ 2026-03-27
 - **Taiwan_VIX**：2,386 筆，2016-11-25 ~ 2026-03-27
 
-產生時間: 2026-05-23 22:55:52 CST
+產生時間: 2026-05-24 15:38:30 CST
 
 ![VIX Chart](vix_chart.svg)
 
@@ -84,6 +85,17 @@ The script automatically fetches **US VIX** and **Taiwan VIX** data (recent mont
     2.  Combine multiple months into a CSV file with columns: Date, Close (VIX value)
     3.  Save as `taifex_vix.csv` in this project folder
     4.  The script will merge this with automatically downloaded data
+
+### 4. CNN Fear & Greed Index
+*   **Status**: **Automatic**.
+*   **Details**: Fetched via CNN's internal API. Provides market sentiment analysis on a scale of 0-100.
+*   **Data Storage**: Saved in `cnn_fear_greed.csv`.
+*   **Rating Categories**:
+    - 0-25: Extreme Fear
+    - 26-44: Fear
+    - 45-55: Neutral
+    - 56-74: Greed
+    - 75-100: Extreme Greed
 
 ## Output
 The script generates `global_vix_merged.csv` containing the combined data (aligned by date).

@@ -51,7 +51,21 @@ def get_vix_sentiment(value):
     except:
         return ""
 
-def update_readme_with_vix(us_vix_value, taiwan_vix_value, taiwan_vix_date):
+def get_latest_cnn_fear_greed():
+    """Get the latest CNN Fear & Greed Index from the CSV file."""
+    try:
+        if os.path.exists("cnn_fear_greed.csv"):
+            df = pd.read_csv("cnn_fear_greed.csv", index_col='Date')
+            if not df.empty:
+                latest_value = df['Fear_Greed_Value'].iloc[-1]
+                latest_rating = df['Rating'].iloc[-1]
+                latest_date = df.index[-1]
+                return f"{latest_value:.2f}", latest_rating, latest_date
+        return "N/A", "N/A", "N/A"
+    except Exception as e:
+        return f"Error: {e}", "N/A", "N/A"
+
+def update_readme_with_vix(us_vix_value, taiwan_vix_value, taiwan_vix_date, cnn_fg_value, cnn_fg_rating, cnn_fg_date):
     readme_path = "README.md"
 
     with open(readme_path, 'r', encoding='utf-8') as f:
@@ -62,9 +76,9 @@ def update_readme_with_vix(us_vix_value, taiwan_vix_value, taiwan_vix_date):
 
     us_display = f'**{us_vix_value}** ({us_sentiment})' if us_sentiment else f'**{us_vix_value}**'
     taiwan_display = f'**{taiwan_vix_value}** ({taiwan_sentiment})' if taiwan_sentiment else f'**{taiwan_vix_value}**'
+    cnn_display = f'**{cnn_fg_value}** ({cnn_fg_rating})' if cnn_fg_rating != "N/A" else f'**{cnn_fg_value}**'
 
     # Update US VIX
-    # Support both the comment placeholder and the direct pattern
     if '<!-- LATEST_US_VIX_DATA -->' in content:
         new_content = re.sub(r'<!-- LATEST_US_VIX_DATA -->', us_display, content)
     else:
@@ -76,6 +90,16 @@ def update_readme_with_vix(us_vix_value, taiwan_vix_value, taiwan_vix_date):
     taiwan_pattern = r'\*\s+\*\*Taiwan VIX \(VIXTWN\)\*\*:.*'
     taiwan_replacement = f'*   **Taiwan VIX (VIXTWN)**: {taiwan_display} (as of {taiwan_vix_date}, automatically collected from TAIFEX)'
     new_content = re.sub(taiwan_pattern, taiwan_replacement, new_content)
+
+    # Update CNN Fear & Greed Index (add if not exists, or update if exists)
+    cnn_pattern = r'\*\s+\*\*CNN Fear & Greed Index\*\*:.*'
+    cnn_replacement = f'*   **CNN Fear & Greed Index**: {cnn_display} (as of {cnn_fg_date}, automatically collected from CNN)'
+    
+    if re.search(cnn_pattern, new_content):
+        new_content = re.sub(cnn_pattern, cnn_replacement, new_content)
+    else:
+        # Insert after Taiwan VIX line
+        new_content = re.sub(taiwan_pattern, taiwan_replacement + f'\n{cnn_replacement}', new_content)
 
     # Generate timestamp in CST
     cst = pytz.timezone('Asia/Taipei')
@@ -94,10 +118,12 @@ def update_readme_with_vix(us_vix_value, taiwan_vix_value, taiwan_vix_date):
 
     print(f"Updated README.md with latest US VIX: {us_vix_value}")
     print(f"Updated README.md with latest Taiwan VIX: {taiwan_vix_value} (as of {taiwan_vix_date})")
+    print(f"Updated README.md with CNN Fear & Greed Index: {cnn_fg_value} ({cnn_fg_rating})")
     print(f"Updated README.md with timestamp: {timestamp}")
 
 if __name__ == "__main__":
-    print("Fetching latest VIX data...")
+    print("Fetching latest data...")
     latest_us_vix = get_latest_us_vix()
     latest_taiwan_vix, taiwan_vix_date = get_latest_taiwan_vix()
-    update_readme_with_vix(latest_us_vix, latest_taiwan_vix, taiwan_vix_date)
+    latest_cnn_val, latest_cnn_rating, latest_cnn_date = get_latest_cnn_fear_greed()
+    update_readme_with_vix(latest_us_vix, latest_taiwan_vix, taiwan_vix_date, latest_cnn_val, latest_cnn_rating, latest_cnn_date)
