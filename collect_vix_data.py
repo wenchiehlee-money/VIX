@@ -307,8 +307,26 @@ def load_taiwan_vix_historical(file_path):
         return pd.DataFrame()
 
 
+def load_cnn_fg_local(file_path, start_date, end_date):
+    """Load CNN Fear & Greed data from local CSV."""
+    print(f"Checking for local CNN Fear & Greed file: {file_path}...")
+    if not os.path.exists(file_path):
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(file_path, index_col='Date', parse_dates=True)
+        df = df[['Fear_Greed_Value']].rename(columns={'Fear_Greed_Value': 'CNN_FG'})
+        
+        mask = (df.index >= pd.to_datetime(start_date)) & (df.index <= pd.to_datetime(end_date))
+        df = df.loc[mask]
+        print(f"  Loaded {len(df)} rows from local CNN file.")
+        return df
+    except Exception as e:
+        print(f"  Error reading local CNN file: {e}")
+        return pd.DataFrame()
+
+
 def main():
-    output_file = "global_vix_merged.csv"
+    output_file = "raw_vix_merged.csv"
 
     # Date ranges
     start_date = "2010-01-01"
@@ -330,6 +348,9 @@ def main():
     taiwan_start_date = (pd.Timestamp.now() - pd.Timedelta(days=65)).strftime("%Y-%m-%d")
     tw_recent = collect_taiwan_vix_auto(taiwan_start_date, end_date)
 
+    # 4. CNN Fear & Greed (Local File)
+    cnn_df = load_cnn_fg_local("cnn_fear_greed.csv", start_date, end_date)
+
     # Merge: recent TAIFEX takes precedence over historical CSV for overlapping dates
     if not tw_historical.empty and not tw_recent.empty:
         tw_df = tw_recent.combine_first(tw_historical)
@@ -347,7 +368,7 @@ def main():
 
     # Build merged dataframe with outer join so all dates are included
     print("\nMerging all data...")
-    frames = [df for df in [us_df, jp_df, tw_df] if not df.empty]
+    frames = [df for df in [us_df, jp_df, tw_df, cnn_df] if not df.empty]
     if not frames:
         print("No data collected.")
         return

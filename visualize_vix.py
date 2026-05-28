@@ -47,7 +47,7 @@ def setup_font():
 setup_font()
 
 # Configuration
-csv_file = "global_vix_merged.csv"
+csv_file = "raw_vix_merged.csv"
 output_image = "vix_chart.svg"
 years_back = 2
 

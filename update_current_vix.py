@@ -23,8 +23,8 @@ def get_latest_us_vix():
 def get_latest_taiwan_vix():
     """Get the latest Taiwan VIX value from the merged CSV file."""
     try:
-        if os.path.exists("global_vix_merged.csv"):
-            df = pd.read_csv("global_vix_merged.csv", index_col='Date', parse_dates=True)
+        if os.path.exists("raw_vix_merged.csv"):
+            df = pd.read_csv("raw_vix_merged.csv", index_col='Date', parse_dates=True)
             if 'Taiwan_VIX' in df.columns:
                 # Get the last non-NaN value
                 taiwan_vix = df['Taiwan_VIX'].dropna()

@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import pytz
 
 # Configuration
-csv_file = "global_vix_merged.csv"
+csv_file = "raw_vix_merged.csv"
 event_file = "raw_event_historical_crashes.csv"
 output_html = "index.html"
 years_back = 40  # Increased to show full historical range from 1990 onwards
