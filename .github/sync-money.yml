@@ -1,0 +1,9 @@
+group:
+  - files:
+      - source: raw_vix_merged.csv
+        dest: data/VIX/raw_vix_merged.csv
+      - source: current_vix.csv
+        dest: data/VIX/current_vix.csv
+    repos: |
+        wenchiehlee-money/biztrends.TW
+        wenchiehlee-money/TAIEX.TW
