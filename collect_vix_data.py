@@ -358,6 +358,12 @@ def main():
 
     merged_df = merged_df.sort_index()
     merged_df = merged_df[~merged_df.index.duplicated(keep='first')]
+    
+    # Add timestamps for freshness tracking
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    merged_df["process_timestamp"] = now_str
+    merged_df["download_timestamp"] = now_str
+    
     merged_df.to_csv(output_file)
 
     print(f"\nSUCCESS! Data saved to {output_file}")
