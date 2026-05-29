@@ -47,9 +47,9 @@ python visualize_vix_interactive.py
 
 | æŒ‡æ¨™ | ç•¶å‰æ•¸å€¼ | å¸‚å ´æƒ…ç·’ / è©•ç´š | æœ€å¾Œæ›´æ–° |
 | :--- | :---: | :---: | :---: |
-| **ç¾Žè‚¡æ³¢å‹•çŽ‡ (US VIX)** | <!-- US_VIX_VAL -->**16.66**<!-- /US_VIX_VAL --> | <!-- US_VIX_SENT -->æº«å’Œæ³¢å‹•<!-- /US_VIX_SENT --> | å¯¦æ™‚ (yfinance) |
-| **å°æŒ‡æ³¢å‹•çŽ‡ (Taiwan VIX)** | <!-- TW_VIX_VAL -->**35.09**<!-- /TW_VIX_VAL --> | <!-- TW_VIX_SENT -->åŠ é‡å‹•ç›ª<!-- /TW_VIX_SENT --> | <!-- TW_VIX_DATE -->2026-05-27<!-- /TW_VIX_DATE --> |
-| **CNN ææ‡¼èˆ‡è²ªå©ªæŒ‡æ•¸** | <!-- CNN_FG_VAL -->**60.40**<!-- /CNN_FG_VAL --> | <!-- CNN_FG_SENT -->Greed<!-- /CNN_FG_SENT --> | <!-- CNN_FG_DATE -->2026-05-27<!-- /CNN_FG_DATE --> |
+| **ç¾Žè‚¡æ³¢å‹•çŽ‡ (US VIX)** | <!-- US_VIX_VAL -->**15.78**<!-- /US_VIX_VAL --> | <!-- US_VIX_SENT -->溫和波動<!-- /US_VIX_SENT --> | å¯¦æ™‚ (yfinance) |
+| **å°æŒ‡æ³¢å‹•çŽ‡ (Taiwan VIX)** | <!-- TW_VIX_VAL -->**35.87**<!-- /TW_VIX_VAL --> | <!-- TW_VIX_SENT -->加重動盪<!-- /TW_VIX_SENT --> | <!-- TW_VIX_DATE -->2026-05-29<!-- /TW_VIX_DATE --> |
+| **CNN ææ‡¼èˆ‡è²ªå©ªæŒ‡æ•¸** | <!-- CNN_FG_VAL -->**60.31**<!-- /CNN_FG_VAL --> | <!-- CNN_FG_SENT -->Greed<!-- /CNN_FG_SENT --> | <!-- CNN_FG_DATE -->2026-05-29<!-- /CNN_FG_DATE --> |
 
 ### Historical Trend
 

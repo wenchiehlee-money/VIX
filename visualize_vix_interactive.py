@@ -95,8 +95,17 @@ def plot_vix_interactive(df_vix):
     # Fetch CNN data
     df_cnn = get_cnn_fg_data()
 
-    # Merge: base range + VIX + TAIEX + CNN
-    df = df_base.join(df_vix, how='left').join(df_taiex, how='left').join(df_cnn, how='left')
+    # Merge: base range + VIX + TAIEX
+    df = df_base.join(df_vix, how='left').join(df_taiex, how='left')
+    
+    # Join CNN data only if it's not already in df_vix (to avoid overlap error)
+    if not df_cnn.empty:
+        if 'CNN_FG' not in df.columns:
+            df = df.join(df_cnn, how='left')
+        else:
+            # Update missing CNN_FG values if any, or just skip if already present
+            df['CNN_FG'] = df['CNN_FG'].fillna(df_cnn['CNN_FG'])
+
     df = df.ffill() # Forward fill to handle weekends/holidays
 
     # Drop rows where we have NO data to keep chart clean

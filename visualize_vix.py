@@ -118,11 +118,19 @@ def plot_vix(df):
     latest_date = df_filtered.index.max()
     plt.axvline(x=latest_date, color='gray', linestyle=':', linewidth=2, label='最新數據')
 
+    # Define numeric VIX columns for plotting and max calculation
+    vix_cols = [col for col in df_filtered.columns if col in styles]
+    
     for col in df_filtered.columns:
         if col in styles:
             # Increase linewidth to 2.5 for better visibility
             styles[col]['linewidth'] = 2.5
             plt.plot(df_filtered.index, df_filtered[col], **styles[col])
+        elif col == 'CNN_FG':
+            plt.plot(df_filtered.index, df_filtered[col], label='CNN Fear & Greed', color='orange', linewidth=1, linestyle=':', alpha=0.7)
+        # Skip timestamp columns
+        elif 'timestamp' in col.lower():
+            continue
         else:
             plt.plot(df_filtered.index, df_filtered[col], label=col, linewidth=2.5)
 
@@ -131,8 +139,13 @@ def plot_vix(df):
     plt.ylabel('VIX 指數值', fontsize=14)
     
     # Set Y-axis limits to make charts look good but capture spikes
-    max_val = df_filtered.max().max()
-    plt.ylim(0, max(45, max_val * 1.1)) 
+    # Only use numeric VIX columns for max calculation to avoid errors with strings
+    numeric_df = df_filtered.select_dtypes(include=['number'])
+    if not numeric_df.empty:
+        max_val = numeric_df.max().max()
+        plt.ylim(0, max(45, max_val * 1.1)) 
+    else:
+        plt.ylim(0, 45)
 
     plt.grid(True, which='both', linestyle='--', linewidth=0.5)
     
