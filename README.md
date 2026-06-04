@@ -47,9 +47,9 @@ python visualize_vix_interactive.py
 
 | æŒ‡æ¨™ | ç•¶å‰æ•¸å€¼ | å¸‚å ´æƒ…ç·’ / è©•ç´š | æœ€å¾Œæ›´æ–° |
 | :--- | :---: | :---: | :---: |
-| **ç¾Žè‚¡æ³¢å‹•çŽ‡ (US VIX)** | <!-- US_VIX_VAL -->**16.06**<!-- /US_VIX_VAL --> | <!-- US_VIX_SENT -->溫和波動<!-- /US_VIX_SENT --> | å¯¦æ™‚ (yfinance) |
-| **å°æŒ‡æ³¢å‹•çŽ‡ (Taiwan VIX)** | <!-- TW_VIX_VAL -->**34.95**<!-- /TW_VIX_VAL --> | <!-- TW_VIX_SENT -->加重動盪<!-- /TW_VIX_SENT --> | <!-- TW_VIX_DATE -->2026-06-03<!-- /TW_VIX_DATE --> |
-| **CNN ææ‡¼èˆ‡è²ªå©ªæŒ‡æ•¸** | <!-- CNN_FG_VAL -->**54.17**<!-- /CNN_FG_VAL --> | <!-- CNN_FG_SENT -->Neutral<!-- /CNN_FG_SENT --> | <!-- CNN_FG_DATE -->2026-06-03<!-- /CNN_FG_DATE --> |
+| **ç¾Žè‚¡æ³¢å‹•çŽ‡ (US VIX)** | <!-- US_VIX_VAL -->**15.54**<!-- /US_VIX_VAL --> | <!-- US_VIX_SENT -->溫和波動<!-- /US_VIX_SENT --> | å¯¦æ™‚ (yfinance) |
+| **å°æŒ‡æ³¢å‹•çŽ‡ (Taiwan VIX)** | <!-- TW_VIX_VAL -->**35.23**<!-- /TW_VIX_VAL --> | <!-- TW_VIX_SENT -->加重動盪<!-- /TW_VIX_SENT --> | <!-- TW_VIX_DATE -->2026-06-04<!-- /TW_VIX_DATE --> |
+| **CNN ææ‡¼èˆ‡è²ªå©ªæŒ‡æ•¸** | <!-- CNN_FG_VAL -->**54.57**<!-- /CNN_FG_VAL --> | <!-- CNN_FG_SENT -->Neutral<!-- /CNN_FG_SENT --> | <!-- CNN_FG_DATE -->2026-06-04<!-- /CNN_FG_DATE --> |
 
 ### Historical Trend
 
