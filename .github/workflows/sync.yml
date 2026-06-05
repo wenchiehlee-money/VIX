@@ -7,6 +7,7 @@ on:
     paths:
       - 'raw_vix_merged.csv'
       - 'current_vix.csv'
+      - 'raw_column_definition_VIX.md'
 
 jobs:
   sync:

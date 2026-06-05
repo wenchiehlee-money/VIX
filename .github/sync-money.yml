@@ -2,6 +2,8 @@ group:
   - files:
       - source: raw_vix_merged.csv
         dest: data/VIX/raw_vix_merged.csv
+      - source: raw_column_definition_VIX.md
+        dest: definitions/raw_column_definition_VIX.md
     repos: |
         wenchiehlee-money/biztrends.TW
         wenchiehlee-money/TAIEX.TW
