@@ -3,7 +3,7 @@ import yfinance as yf
 import os
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import time
 
 def collect_us_vix(start_date, end_date):
@@ -387,7 +387,15 @@ def main():
     
     merged_df.to_csv(output_file)
 
-    print(f"\nSUCCESS! Data saved to {output_file}")
+    raw_df = merged_df.copy()
+    if "CNN_FG" not in raw_df.columns:
+        raw_df.insert(0, "CNN_FG", "")
+    timestamp = datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S CST")
+    raw_df["process_timestamp"] = timestamp
+    raw_df["download_timestamp"] = timestamp
+    raw_df.to_csv("raw_vix_merged.csv")
+
+    print(f"\nSUCCESS! Data saved to {output_file} and raw_vix_merged.csv")
     print("\nData Summary:")
     print(merged_df.describe())
     print("\nRecent data (last 5 rows):")

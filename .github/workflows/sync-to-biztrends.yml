@@ -1,0 +1,25 @@
+name: Sync VIX Data to biztrends
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'raw_vix_merged.csv'
+      - 'raw_column_definition_VIX.md'
+
+jobs:
+  sync-to-biztrends:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync to biztrends.TW
+        uses: BetaHuhn/repo-file-sync-action@latest
+        with:
+          GH_PAT: ${{ secrets.REPO_FILE_SYNC_WENCHIEHLEE_MONEY }}
+          CONFIG_PATH: .github/sync-to-biztrends.yml
+          COMMIT_EACH_FILE: false
+          PR_LABELS: automated-sync
+          SKIP_PR: true
