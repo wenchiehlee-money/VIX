@@ -61,7 +61,7 @@ def fetch_all_taifex_vix(start_year=2015, end_year=None):
     df = df[~df.index.duplicated(keep='first')]
 
     output_file = 'taiwan_vix_historical.csv'
-    df.to_csv(output_file)
+    df.to_csv(output_file, encoding='utf-8')
     print(f"\nSaved {len(df)} rows to {output_file}")
     print(f"Date range: {df.index.min().date()} to {df.index.max().date()}")
     print(df.tail())

@@ -385,7 +385,7 @@ def main():
     merged_df["process_timestamp"] = now_str
     merged_df["download_timestamp"] = now_str
     
-    merged_df.to_csv(output_file)
+    merged_df.to_csv(output_file, encoding='utf-8')
 
     raw_df = merged_df.copy()
     if "CNN_FG" not in raw_df.columns:
@@ -393,7 +393,7 @@ def main():
     timestamp = datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d %H:%M:%S CST")
     raw_df["process_timestamp"] = timestamp
     raw_df["download_timestamp"] = timestamp
-    raw_df.to_csv("raw_vix_merged.csv")
+    raw_df.to_csv("raw_vix_merged.csv", encoding='utf-8')
 
     print(f"\nSUCCESS! Data saved to {output_file} and raw_vix_merged.csv")
     print("\nData Summary:")

@@ -115,7 +115,7 @@ def main():
     final_df = final_df[~final_df.index.duplicated(keep='last')]
     
     # 5. Save to CSV
-    final_df.to_csv(file_path)
+    final_df.to_csv(file_path, encoding='utf-8')
     print(f"Saved {len(final_df)} rows to {file_path}")
     
     # Output current summary

@@ -158,6 +158,18 @@ def plot_vix(df):
     plt.savefig(output_image, format='svg', bbox_inches='tight')
     print(f"Chart saved to {output_image} (SVG vector format)")
 
+    # Ensure SVG has XML declaration with UTF-8 encoding to prevent rendering/encoding issues
+    try:
+        with open(output_image, 'r', encoding='utf-8') as f:
+            svg_content = f.read()
+        if not svg_content.strip().startswith('<?xml'):
+            svg_content = '<?xml version="1.0" encoding="utf-8" standalone="no"?>\n' + svg_content
+            with open(output_image, 'w', encoding='utf-8') as f:
+                f.write(svg_content)
+            print("Added XML UTF-8 declaration to SVG file.")
+    except Exception as e:
+        print(f"Warning: Could not add XML declaration to SVG: {e}")
+
 if __name__ == "__main__":
     df = get_data()
     plot_vix(df)
