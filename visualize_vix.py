@@ -11,6 +11,26 @@ def setup_font():
     matplotlib.rcParams['svg.fonttype'] = 'path'  # Render text as paths for consistent SVG display
     matplotlib.rcParams['axes.unicode_minus'] = False  # Fix minus sign display
     
+    # Try to manually add common Linux CJK fonts if on Linux
+    if platform.system() == 'Linux':
+        try:
+            from matplotlib import font_manager
+            possible_paths = [
+                '/usr/share/fonts/truetype/wqy/wqy-microhei.ttc',
+                '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
+                '/usr/share/fonts/opentype/noto/NotoSansCJK.ttc',
+                '/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttf'
+            ]
+            for path in possible_paths:
+                if os.path.exists(path):
+                    try:
+                        font_manager.fontManager.addfont(path)
+                        print(f"Manually added font from path: {path}")
+                    except Exception as ae:
+                        print(f"Failed to add font {path}: {ae}")
+        except Exception as fe:
+            print(f"Error loading system fonts: {fe}")
+            
     # Comprehensive list of Traditional Chinese fonts across platforms
     tc_fonts = [
         'Microsoft JhengHei', 'Microsoft YaHei', 
