@@ -127,7 +127,13 @@ def plot_vix(df):
             styles[col]['linewidth'] = 2.5
             plt.plot(df_filtered.index, df_filtered[col], **styles[col])
         elif col == 'CNN_FG':
+            # Base line: orange dotted
             plt.plot(df_filtered.index, df_filtered[col], label='CNN Fear & Greed', color='orange', linewidth=1, linestyle=':', alpha=0.7)
+            # Highlight line: Red and Bold continuous line for 0-25 and 75-100
+            cnn_fg = df_filtered[col]
+            cnn_high = cnn_fg.copy()
+            cnn_high[(cnn_high > 25) & (cnn_high < 75)] = float('nan')
+            plt.plot(df_filtered.index, cnn_high, color='red', linewidth=3, linestyle='-', label='_nolegend_', marker='o', markersize=3, alpha=0.9)
         # Skip timestamp columns
         elif 'timestamp' in col.lower():
             continue

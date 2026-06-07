@@ -133,14 +133,35 @@ def plot_vix_interactive(df_vix):
     # but Plotly standard secondary_y only allows one.
     # We will share secondary_y with TAIEX but CNN is 0-100.
     if 'CNN_FG' in df.columns:
+        # Base line: orange dotted
         fig.add_trace(
             go.Scatter(
                 x=df.index, y=df['CNN_FG'], name="CNN Fear & Greed (美股情緒)",
                 line=dict(color='orange', width=1.5, dash='dot'),
                 hovertemplate='CNN FG: %{y:.1f}<extra></extra>',
-                visible='legendonly' # Start hidden to avoid clutter, user can enable
+                visible='legendonly', # Start hidden to avoid clutter, user can enable
+                legendgroup='CNN_FG'
             ),
             secondary_y=False, # Put on primary Y-axis (0-100) same as VIX
+        )
+        
+        # Highlight line: Red and Bold continuous line for 0-25 and 75-100
+        cnn_fg = df['CNN_FG']
+        cnn_high = cnn_fg.copy()
+        cnn_high[(cnn_high > 25) & (cnn_high < 75)] = float('nan')
+        
+        fig.add_trace(
+            go.Scatter(
+                x=df.index, y=cnn_high, name="CNN FG 極端值",
+                line=dict(color='red', width=3, dash='solid'),
+                mode='lines+markers',
+                marker=dict(size=4, color='red'),
+                hovertemplate='CNN FG: %{y:.1f}<extra></extra>',
+                visible='legendonly',
+                legendgroup='CNN_FG',
+                showlegend=False  # Hide this second trace from the legend panel
+            ),
+            secondary_y=False,
         )
 
     # 3. Add VIX lines (Primary Y-axis, 100% height)
