@@ -14,9 +14,9 @@ def collect_us_vix(start_date, end_date):
         if df.empty:
             print("  No data found for US VIX.")
             return pd.DataFrame()
-            
-        df = df[['Close']].rename(columns={'Close': 'US_VIX'})
-        df.index = df.index.tz_localize(None) 
+
+        df = df[["Close"]].rename(columns={"Close": "US_VIX"})
+        df.index = df.index.tz_localize(None)
         print(f"  Got {len(df)} rows.")
         return df
     except Exception as e:
@@ -71,18 +71,18 @@ def collect_taiwan_vix_auto(start_date, end_date):
         end_dt = pd.to_datetime(end_date)
         all_data = []
 
-        # Calculate months to fetch
-        current_date = end_dt
+        # Calculate months to fetch. Compare month starts so the month containing
+        # start_date is included even when start_date is not the first day.
+        current_month = pd.Timestamp(end_dt.year, end_dt.month, 1)
+        start_month = pd.Timestamp(start_dt.year, start_dt.month, 1)
         months_to_fetch = []
 
-        # Go back to start date, collecting all months
-        while current_date >= start_dt:
-            months_to_fetch.append((current_date.year, current_date.month))
-            # Move to previous month
-            if current_date.month == 1:
-                current_date = pd.Timestamp(current_date.year - 1, 12, 1)
+        while current_month >= start_month:
+            months_to_fetch.append((current_month.year, current_month.month))
+            if current_month.month == 1:
+                current_month = pd.Timestamp(current_month.year - 1, 12, 1)
             else:
-                current_date = pd.Timestamp(current_date.year, current_date.month - 1, 1)
+                current_month = pd.Timestamp(current_month.year, current_month.month - 1, 1)
 
         months_to_fetch.reverse()  # Process chronologically
 
@@ -343,9 +343,13 @@ def main():
     print("\nLoading Taiwan VIX historical base (taiwan_vix_historical.csv)...")
     tw_historical = load_taiwan_vix_historical("taiwan_vix_historical.csv")
 
-    # TAIFEX only keeps ~2 months; fetch current + previous month to catch the latest days
-    print("Fetching latest Taiwan VIX from TAIFEX (current + previous month)...")
-    taiwan_start_date = (pd.Timestamp.now() - pd.Timedelta(days=65)).strftime("%Y-%m-%d")
+    # Fetch from the historical handoff point with overlap so monthly TAIFEX
+    # files cannot leave a gap when the historical file stops mid-month.
+    print("Fetching latest Taiwan VIX from TAIFEX (historical handoff onward)...")
+    if not tw_historical.empty:
+        taiwan_start_date = (tw_historical.index.max() - pd.Timedelta(days=7)).strftime("%Y-%m-%d")
+    else:
+        taiwan_start_date = (pd.Timestamp.now() - pd.Timedelta(days=65)).strftime("%Y-%m-%d")
     tw_recent = collect_taiwan_vix_auto(taiwan_start_date, end_date)
 
     # 4. CNN Fear & Greed (Local File)
@@ -365,6 +369,11 @@ def main():
         print(f"  Taiwan VIX combined: {tw_df['Taiwan_VIX'].notna().sum()} rows "
               f"({tw_df[tw_df.Taiwan_VIX.notna()].index.min().date()} ~ "
               f"{tw_df[tw_df.Taiwan_VIX.notna()].index.max().date()})")
+
+        tw_history_out = tw_df[["Taiwan_VIX"]].dropna().rename(columns={"Taiwan_VIX": "IVIXTWN"})
+        tw_history_out.index.name = "Date"
+        tw_history_out.to_csv("taiwan_vix_historical.csv", encoding="utf-8")
+        print(f"  Updated Taiwan VIX historical base: {len(tw_history_out)} rows")
 
     # Build merged dataframe with outer join so all dates are included
     print("\nMerging all data...")
