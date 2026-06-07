@@ -100,3 +100,5 @@ The script automatically fetches **US VIX** and **Taiwan VIX** data (recent mont
 
 ## Output
 The script generates `global_vix_merged.csv` containing the combined data (aligned by date).
+
+*This repository is automatically updated daily using GitHub Actions.*
