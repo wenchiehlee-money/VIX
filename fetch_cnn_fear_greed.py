@@ -70,13 +70,15 @@ def fetch_cnn_fear_greed(start_date=None):
         print(f"Exception while fetching CNN data: {e}")
         return pd.DataFrame()
 
+HISTORICAL_START = "2020-12-01"   # CNN API 最遠可回溯至約 2020-12 (1400 筆上限)
+
 def main():
     file_path = "cnn_fear_greed.csv"
-    
+
     # 1. Load existing data if available
     existing_df = pd.DataFrame()
     last_date = None
-    
+
     if os.path.exists(file_path):
         try:
             existing_df = pd.read_csv(file_path, index_col='Date')
@@ -85,23 +87,31 @@ def main():
                 print(f"Found existing data. Last date: {last_date}")
         except Exception as e:
             print(f"Error reading existing CSV: {e}")
-    
-    # 2. Determine start date for API (fetch since last date to be safe)
-    # If we have data, we fetch since last date - 2 days to catch any updates
+
+    # 2. Backfill if existing data doesn't reach HISTORICAL_START
+    if not existing_df.empty:
+        earliest = existing_df.index.min()
+        if earliest > HISTORICAL_START:
+            print(f"Backfilling CNN F&G from {HISTORICAL_START} (existing earliest: {earliest})...")
+            backfill_df = fetch_cnn_fear_greed(HISTORICAL_START)
+            if not backfill_df.empty:
+                existing_df = backfill_df.combine_first(existing_df)
+                print(f"  backfilled to {existing_df.index.min()}, total {len(existing_df)} rows")
+
+    # 3. Determine start date for incremental update
     if last_date:
         fetch_start = (pd.to_datetime(last_date) - pd.Timedelta(days=2)).strftime("%Y-%m-%d")
     else:
-        # Default to a few years back for initial population
-        fetch_start = "2024-01-01"
-    
-    # 3. Fetch new data
+        fetch_start = HISTORICAL_START
+
+    # 4. Fetch new data
     new_data_df = fetch_cnn_fear_greed(fetch_start)
     
     if new_data_df.empty and existing_df.empty:
         print("Failed to get any data.")
         return
 
-    # 4. Merge data
+    # 5. Merge data
     if not existing_df.empty and not new_data_df.empty:
         # Update existing with new data
         final_df = new_data_df.combine_first(existing_df)
@@ -114,11 +124,11 @@ def main():
     final_df = final_df.sort_index()
     final_df = final_df[~final_df.index.duplicated(keep='last')]
     
-    # 5. Save to CSV
+    # 6. Save to CSV
     final_df.to_csv(file_path, encoding='utf-8')
     print(f"Saved {len(final_df)} rows to {file_path}")
     
-    # Output current summary
+    # 7. Output current summary
     if not final_df.empty:
         current = final_df.iloc[-1]
         print("\n--- Current CNN Fear & Greed Index ---")
