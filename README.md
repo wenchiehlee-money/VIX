@@ -47,16 +47,16 @@ python visualize_vix_interactive.py
 
 | 指標 | 當前數值 | 市場情緒 / 評級 | 最後更新 |
 | :--- | :---: | :---: | :---: |
-| **美股波動率 (US VIX)** | <!-- US_VIX_VAL -->**15.81**<!-- /US_VIX_VAL --> | <!-- US_VIX_SENT -->溫和波動<!-- /US_VIX_SENT --> | 實時 (yfinance) |
-| **台指波動率 (Taiwan VIX)** | <!-- TW_VIX_VAL -->**36.61**<!-- /TW_VIX_VAL --> | <!-- TW_VIX_SENT -->加重動盪<!-- /TW_VIX_SENT --> | <!-- TW_VIX_DATE -->2026-07-03<!-- /TW_VIX_DATE --> |
-| **CNN 恐懼與貪婪指數** | <!-- CNN_FG_VAL -->**31.89**<!-- /CNN_FG_VAL --> | <!-- CNN_FG_SENT -->Fear<!-- /CNN_FG_SENT --> | <!-- CNN_FG_DATE -->2026-07-03<!-- /CNN_FG_DATE --> |
+| **美股波動率 (US VIX)** | <!-- US_VIX_VAL -->**15.90**<!-- /US_VIX_VAL --> | <!-- US_VIX_SENT -->溫和波動<!-- /US_VIX_SENT --> | 實時 (yfinance) |
+| **台指波動率 (Taiwan VIX)** | <!-- TW_VIX_VAL -->**36.89**<!-- /TW_VIX_VAL --> | <!-- TW_VIX_SENT -->加重動盪<!-- /TW_VIX_SENT --> | <!-- TW_VIX_DATE -->2026-07-06<!-- /TW_VIX_DATE --> |
+| **CNN 恐懼與貪婪指數** | <!-- CNN_FG_VAL -->**44.69**<!-- /CNN_FG_VAL --> | <!-- CNN_FG_SENT -->Neutral<!-- /CNN_FG_SENT --> | <!-- CNN_FG_DATE -->2026-07-06<!-- /CNN_FG_DATE --> |
 
 ### Historical Trend
 
 - **US VIX**：<!-- US_VIX_COUNT -->N/A<!-- /US_VIX_COUNT --> 筆，<!-- US_VIX_RANGE -->N/A<!-- /US_VIX_RANGE -->
 - **Taiwan VIX**：<!-- TW_VIX_COUNT -->N/A<!-- /TW_VIX_COUNT --> 筆，<!-- TW_VIX_RANGE -->N/A<!-- /TW_VIX_RANGE -->
 - **CNN Fear & Greed**：<!-- CNN_FG_COUNT -->N/A<!-- /CNN_FG_COUNT --> 筆，<!-- CNN_FG_RANGE -->N/A<!-- /CNN_FG_RANGE -->
-產生時間: 2026-07-05 23:08:15 CST
+產生時間: 2026-07-07 00:49:04 CST
 
 ![VIX Chart](vix_chart.svg)
 
