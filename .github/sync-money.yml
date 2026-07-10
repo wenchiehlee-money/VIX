@@ -10,6 +10,6 @@ group:
 
   - files:
       - source: raw_vix_merged.csv
-        dest: raw_vix_merged.csv
+        dest: data/VIX/raw_vix_merged.csv
     repos: |
-        wenchiehlee-money/GoogleSheet.Banks
+        WJLEE1020/GoogleSheet.Banks
