@@ -56,7 +56,7 @@ python visualize_vix_interactive.py
 - **US VIX**：<!-- US_VIX_COUNT -->N/A<!-- /US_VIX_COUNT --> 筆，<!-- US_VIX_RANGE -->N/A<!-- /US_VIX_RANGE -->
 - **Taiwan VIX**：<!-- TW_VIX_COUNT -->N/A<!-- /TW_VIX_COUNT --> 筆，<!-- TW_VIX_RANGE -->N/A<!-- /TW_VIX_RANGE -->
 - **CNN Fear & Greed**：<!-- CNN_FG_COUNT -->N/A<!-- /CNN_FG_COUNT --> 筆，<!-- CNN_FG_RANGE -->N/A<!-- /CNN_FG_RANGE -->
-產生時間: 2026-09-06 00:26:21 CST
+產生時間: 2026-09-07 00:37:23 CST
 
 ![VIX Chart](vix_chart.svg)
 
