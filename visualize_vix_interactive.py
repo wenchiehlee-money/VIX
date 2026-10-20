@@ -282,8 +282,246 @@ def plot_vix_interactive(df_vix):
     fig.update_yaxes(title_text="VIX 指數", range=[0, max_vix], gridcolor='#f0f0f0', secondary_y=False)
     fig.update_yaxes(title_text="TAIEX 指數", showgrid=False, secondary_y=True)
 
-    fig.write_html(output_html, include_plotlyjs='cdn', config={'displayModeBar': True, 'displaylogo': False})
-    print(f"Interactive chart (580px, 85:15 ratio, 100% overlay) saved to {output_html}")
+        # Extract latest metrics for KPI strip
+    latest_us_vix = 15.09
+    latest_tw_vix = 23.29
+    latest_cnn_fg = 44.29
+
+    try:
+        if 'US_VIX' in df.columns:
+            valid_us = df['US_VIX'].dropna()
+            if not valid_us.empty:
+                latest_us_vix = float(valid_us.iloc[-1])
+        if 'Taiwan_VIX' in df.columns:
+            valid_tw = df['Taiwan_VIX'].dropna()
+            if not valid_tw.empty:
+                latest_tw_vix = float(valid_tw.iloc[-1])
+        if os.path.exists('cnn_fear_greed.csv'):
+            df_cnn_tmp = pd.read_csv('cnn_fear_greed.csv')
+            if 'Fear_Greed_Value' in df_cnn_tmp.columns and not df_cnn_tmp.empty:
+                latest_cnn_fg = float(df_cnn_tmp['Fear_Greed_Value'].dropna().iloc[-1])
+    except Exception as e:
+        print(f"Warning calculating KPI values: {e}")
+
+    chart_div = fig.to_html(full_html=False, include_plotlyjs='cdn', config={'displayModeBar': True, 'displaylogo': False, 'responsive': True})
+
+    vix_full_html = f"""<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taiwan VIX vs TAIEX · 全球波動率雷達 (VIX Radar)</title>
+  
+  <!-- 幾何黑天鵝 SVG Favicon (Vecteezy 70781740) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ef4444'%3E%3Cpath d='M 19.87 10.29 C 18.53 10.90, 16.41 10.68, 15.61 11.02 C 14.82 11.36, 13.62 12.66, 13.20 13.04 C 12.59 17.63, 11.47 15.05, 11.36 15.50 C 10.52 14.66, 9.22 11.32, 8.44 11.02 C 5.87 11.92, 9.96 13.48, 9.62 14.49 C 10.63 18.13, 12.14 18.86, 13.99 17.85 C 15.89 11.92, 18.86 11.64, 19.87 10.29 Z'/%3E%3C/svg%3E">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700;800&family=Noto+Sans+TC:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    * {{ box-sizing: border-box; }}
+    body {{
+      background: #f8fafc;
+      color: #0f172a;
+      font-family: 'Inter', 'Noto Sans TC', sans-serif;
+      margin: 0;
+      padding: 24px 20px;
+      -webkit-font-smoothing: antialiased;
+    }}
+    .vix-page-wrapper {{
+      max-width: 1440px;
+      margin: 0 auto;
+    }}
+    .vix-header-bar {{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+      background: #0f172a;
+      padding: 16px 24px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+      border: 1px solid #1e293b;
+    }}
+    .vix-brand-box {{
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }}
+    .vix-brand-logo {{
+      width: 32px;
+      height: 32px;
+      fill: #ef4444;
+      filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.65));
+      flex-shrink: 0;
+    }}
+    .vix-site-title {{
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+      margin: 0;
+    }}
+    .vix-site-desc {{
+      font-size: 0.78rem;
+      color: #94a3b8;
+      margin-top: 3px;
+    }}
+    .vix-sync-badge {{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.74rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 4px 10px;
+      border-radius: 9999px;
+    }}
+    .vix-deck-btn {{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ffffff;
+      color: #0284c7;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      border: 1px solid #bae6fd;
+    }}
+    .vix-deck-btn:hover {{
+      background: #f0f9ff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
+    }}
+    .vix-kpi-grid {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }}
+    .vix-kpi-card {{
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px 18px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }}
+    .vix-kpi-header {{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }}
+    .vix-kpi-title {{
+      font-size: 0.76rem;
+      color: #64748b;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }}
+    .vix-kpi-val {{
+      font-size: 1.85rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1.15;
+    }}
+    .vix-kpi-desc {{
+      font-size: 0.74rem;
+      font-weight: 600;
+    }}
+    .vix-chart-card {{
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 18px 16px;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }}
+    .vix-footer {{
+      margin-top: 20px;
+      text-align: center;
+      font-size: 0.78rem;
+      color: #94a3b8;
+    }}
+  </style>
+</head>
+<body>
+  <div class="vix-page-wrapper">
+    <!-- Obsidian Dark 品牌導航列 -->
+    <header class="vix-header-bar">
+      <div class="vix-brand-box">
+        <svg class="vix-brand-logo" viewBox="0 0 24 24">
+          <path d="M 19.87 10.29 C 18.53 10.90, 16.41 10.68, 15.61 11.02 C 14.82 11.36, 13.62 12.66, 13.20 13.04 C 12.59 17.63, 11.47 15.05, 11.36 15.50 C 10.52 14.66, 9.22 11.32, 8.44 11.02 C 5.87 11.92, 9.96 13.48, 9.62 14.49 C 10.63 18.13, 12.14 18.86, 13.99 17.85 C 15.89 11.92, 18.86 11.64, 19.87 10.29 Z"/>
+        </svg>
+        <div>
+          <h1 class="vix-site-title">Taiwan VIX vs TAIEX · 全球波動率雷達</h1>
+          <div class="vix-site-desc">台美日波動率指標、CNN 恐懼與貪婪指數及黑天鵝崩盤回測</div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <span class="vix-sync-badge">● 每日收盤定時結算 (CST)</span>
+        <a href="https://wenchiehlee-ux.github.io/UX-Deck/" target="_blank" rel="noopener noreferrer" class="vix-deck-btn" title="瀏覽全端點吉祥物與九大生態系統設計規範">
+          🎨 返回 UX-Deck 總看板 ↗
+        </a>
+      </div>
+    </header>
+
+    <!-- 3 KPI Cards Strip -->
+    <div class="vix-kpi-grid">
+      <div class="vix-kpi-card" style="border-top: 3px solid #ef4444;">
+        <div class="vix-kpi-header">
+          <span class="vix-kpi-title">美股波動率 (US VIX)</span>
+          <span style="font-size: 0.7rem; background: #fef2f2; color: #dc2626; padding: 2px 8px; border-radius: 9999px; font-weight: 700;">CBOE</span>
+        </div>
+        <div class="vix-kpi-val" style="color: #ef4444;">{latest_us_vix:.2f}</div>
+        <div class="vix-kpi-desc" style="color: #059669;">🟢 溫和常態 · Normal Complacency</div>
+      </div>
+
+      <div class="vix-kpi-card" style="border-top: 3px solid #10b981;">
+        <div class="vix-kpi-header">
+          <span class="vix-kpi-title">台指波動率 (TAIWAN VIX)</span>
+          <span style="font-size: 0.7rem; background: #ecfdf5; color: #047857; padding: 2px 8px; border-radius: 9999px; font-weight: 700;">TAIFEX</span>
+        </div>
+        <div class="vix-kpi-val" style="color: #10b981;">{latest_tw_vix:.2f}</div>
+        <div class="vix-kpi-desc" style="color: #ea580c;">🟠 市場關注 · Elevated Alert</div>
+      </div>
+
+      <div class="vix-kpi-card" style="border-top: 3px solid #0284c7;">
+        <div class="vix-kpi-header">
+          <span class="vix-kpi-title">CNN 恐懼與貪婪指數</span>
+          <span style="font-size: 0.7rem; background: #f0f9ff; color: #0284c7; padding: 2px 8px; border-radius: 9999px; font-weight: 700;">CNN F&G</span>
+        </div>
+        <div class="vix-kpi-val" style="color: #0284c7;">{latest_cnn_fg:.2f}</div>
+        <div class="vix-kpi-desc" style="color: #0369a1;">🔵 中立觀望 · Neutral Stance</div>
+      </div>
+    </div>
+
+    <!-- Plotly Interactive Chart Container -->
+    <main class="vix-chart-card">
+      {chart_div}
+    </main>
+
+    <!-- Footer -->
+    <footer class="vix-footer">
+      UX-Deck 生態系家族端點 · 資料來源：TAIFEX (台灣期貨交易所) · Yahoo Finance · CNN Business
+    </footer>
+  </div>
+</body>
+</html>"""
+
+    with open(output_html, 'w', encoding='utf-8') as f:
+        f.write(vix_full_html)
+    print(f"[UX-Deck] Standalone branded VIX dashboard successfully saved to {output_html}!")
 
 if __name__ == "__main__":
     df_vix = get_vix_data()
