@@ -283,9 +283,10 @@ def plot_vix_interactive(df_vix):
     fig.update_yaxes(title_text="TAIEX 指數", showgrid=False, secondary_y=True)
 
         # Extract latest metrics for KPI strip
-    latest_us_vix = 15.09
-    latest_tw_vix = 23.29
-    latest_cnn_fg = 44.29
+    latest_us_vix = 18.11
+    latest_tw_vix = 26.37
+    latest_cnn_fg = 24.94
+    cnn_rating = "Extreme Fear"
 
     try:
         if 'US_VIX' in df.columns:
@@ -300,8 +301,13 @@ def plot_vix_interactive(df_vix):
             df_cnn_tmp = pd.read_csv('cnn_fear_greed.csv')
             if 'Fear_Greed_Value' in df_cnn_tmp.columns and not df_cnn_tmp.empty:
                 latest_cnn_fg = float(df_cnn_tmp['Fear_Greed_Value'].dropna().iloc[-1])
+            if 'Rating' in df_cnn_tmp.columns and not df_cnn_tmp.empty:
+                cnn_rating = str(df_cnn_tmp['Rating'].dropna().iloc[-1])
     except Exception as e:
         print(f"Warning calculating KPI values: {e}")
+
+    # Pointer position bounded between 0 and 100
+    gauge_pointer_pct = max(2.0, min(98.0, latest_cnn_fg))
 
     chart_div = fig.to_html(full_html=False, include_plotlyjs='cdn', config={'displayModeBar': True, 'displaylogo': False, 'responsive': True})
 
@@ -447,8 +453,111 @@ def plot_vix_interactive(df_vix):
       box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
       overflow: hidden;
     }}
-    .vix-footer {{
+
+    /* VIX Gauge / Scale Bar */
+    .vix-gauge-box {{
+      background: #0f172a;
+      border-radius: 14px;
+      padding: 1.25rem 1.35rem;
+      color: #ffffff;
       margin-top: 20px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+      border: 1px solid #1e293b;
+    }}
+    .vix-gauge-top {{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }}
+    .vix-gauge-bar {{
+      height: 10px;
+      border-radius: 9999px;
+      background: linear-gradient(90deg, #ef4444 0%, #f97316 25%, #38bdf8 50%, #eab308 75%, #10b981 100%);
+      position: relative;
+      margin-bottom: 8px;
+    }}
+    .vix-gauge-pointer {{
+      position: absolute;
+      top: -3px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 3px solid #ef4444;
+      box-shadow: 0 0 10px #ef4444;
+      transform: translateX(-50%);
+    }}
+    .vix-scale-labels {{
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      font-family: "JetBrains Mono", monospace;
+      color: #94a3b8;
+    }}
+
+    /* Historical Crash Events Timeline */
+    .vix-events-section {{
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 18px 20px;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+      margin-top: 20px;
+    }}
+    .vix-events-header {{
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }}
+    .vix-events-row {{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+    }}
+    .vix-event-card {{
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid #ef4444;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 0.8rem;
+      transition: all 0.2s ease;
+    }}
+    .vix-event-card:hover {{
+      border-color: #cbd5e1;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+    }}
+    .vix-event-date {{
+      color: #ef4444;
+      font-weight: 800;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.75rem;
+    }}
+    .vix-event-title {{
+      font-weight: 800;
+      color: #0f172a;
+      margin: 3px 0 2px;
+      font-size: 0.88rem;
+    }}
+    .vix-event-stat {{
+      color: #64748b;
+      font-size: 0.76rem;
+      line-height: 1.4;
+    }}
+
+    .vix-footer {{
+      margin-top: 24px;
       text-align: center;
       font-size: 0.78rem;
       color: #94a3b8;
@@ -502,7 +611,7 @@ def plot_vix_interactive(df_vix):
           <span style="font-size: 0.7rem; background: #f0f9ff; color: #0284c7; padding: 2px 8px; border-radius: 9999px; font-weight: 700;">CNN F&G</span>
         </div>
         <div class="vix-kpi-val" style="color: #0284c7;">{latest_cnn_fg:.2f}</div>
-        <div class="vix-kpi-desc" style="color: #0369a1;">🔵 中立觀望 · Neutral Stance</div>
+        <div class="vix-kpi-desc" style="color: #0369a1;">🔵 {cnn_rating}</div>
       </div>
     </div>
 
@@ -510,6 +619,53 @@ def plot_vix_interactive(df_vix):
     <main class="vix-chart-card">
       {chart_div}
     </main>
+
+    <!-- 市場情緒光譜量尺 (Sentiment Spectrum Gauge) -->
+    <div class="vix-gauge-box">
+      <div class="vix-gauge-top">
+        <span style="font-size: 0.86rem; font-weight: 700; color: #f1f5f9;">市場情緒光譜量尺 (Sentiment Spectrum Gauge)</span>
+        <span style="font-size: 0.76rem; font-family: 'JetBrains Mono', monospace; color: #f97316;">當前指標位階：{latest_cnn_fg:.2f}% ({cnn_rating})</span>
+      </div>
+      <div class="vix-gauge-bar">
+        <div class="vix-gauge-pointer" style="left: {gauge_pointer_pct:.2f}%;"></div>
+      </div>
+      <div class="vix-scale-labels">
+        <span style="color: #ef4444;">0 極度恐慌 (&lt; 25)</span>
+        <span style="color: #f97316;">25 恐慌 (25~45)</span>
+        <span style="color: #38bdf8;">50 中立 (45~55)</span>
+        <span style="color: #eab308;">75 貪婪 (55~75)</span>
+        <span style="color: #10b981;">100 極度貪婪 (&gt; 75)</span>
+      </div>
+    </div>
+
+    <!-- 歷史重大黑天鵝與崩盤回測事件 (Historical Crash Stress Tests) -->
+    <section class="vix-events-section">
+      <div class="vix-events-header">
+        <span>🚨 歷史重大黑天鵝與崩盤回測事件 (Historical Crash Stress Tests)</span>
+      </div>
+      <div class="vix-events-row">
+        <div class="vix-event-card">
+          <div class="vix-event-date">2024-08-05</div>
+          <div class="vix-event-title">805 日圓套利平倉股災</div>
+          <div class="vix-event-stat">Taiwan VIX 飆升至 <strong>48.20</strong> · TAIEX 單日重挫 -1,807 點</div>
+        </div>
+        <div class="vix-event-card">
+          <div class="vix-event-date">2020-03-19</div>
+          <div class="vix-event-title">COVID-19 全球疫情熔斷</div>
+          <div class="vix-event-stat">US VIX 飆破 <strong>82.69</strong> (歷史天量) · 全球流動性恐慌</div>
+        </div>
+        <div class="vix-event-card">
+          <div class="vix-event-date">2018-02-06</div>
+          <div class="vix-event-title">206 期貨選擇權雙向歸零</div>
+          <div class="vix-event-stat">Taiwan VIX 單日跳漲 <strong>+14.5</strong> · 波動率產品清算</div>
+        </div>
+        <div class="vix-event-card">
+          <div class="vix-event-date">2011-08-08</div>
+          <div class="vix-event-title">美國主權債務降評事件</div>
+          <div class="vix-event-stat">S&P 降評引發全球拋售 · US VIX 突破 <strong>48.00</strong></div>
+        </div>
+      </div>
+    </section>
 
     <!-- Footer -->
     <footer class="vix-footer">
