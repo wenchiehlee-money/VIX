@@ -563,6 +563,14 @@ def plot_vix_interactive(df_vix):
       font-size: 0.78rem;
       color: #94a3b8;
     }}
+  <!-- Global site tag (gtag.js) - Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-913Z6DSVD2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-913Z6DSVD2');
+  </script>
   </style>
 </head>
 <body>
