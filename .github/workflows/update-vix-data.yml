@@ -72,7 +72,23 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Sync to downstream repos
+      id: sync_biztrends
+      continue-on-error: true  # retried below on failure (e.g. biztrends.TW ref-lock race)
       if: steps.check_changes.outputs.changed == 'true'
+      uses: BetaHuhn/repo-file-sync-action@latest
+      with:
+        GH_PAT: ${{ secrets.REPO_FILE_SYNC_WENCHIEHLEE_MONEY }}
+        CONFIG_PATH: .github/sync-money.yml
+        COMMIT_EACH_FILE: false
+        PR_LABELS: "automated-sync"
+        SKIP_PR: true
+
+    - name: Wait before retrying biztrends.TW sync
+      if: steps.sync_biztrends.outcome == 'failure'
+      run: sleep $((45 + RANDOM % 90))
+
+    - name: Sync to downstream repos (retry)
+      if: steps.sync_biztrends.outcome == 'failure'
       uses: BetaHuhn/repo-file-sync-action@latest
       with:
         GH_PAT: ${{ secrets.REPO_FILE_SYNC_WENCHIEHLEE_MONEY }}
